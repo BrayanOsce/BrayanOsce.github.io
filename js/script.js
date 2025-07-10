@@ -1,4 +1,3 @@
-
 // Carrusel de fotos dinámico desde .txt de Google Drive
 
 const prevBtn = document.querySelector('.prev');
@@ -56,10 +55,6 @@ const anifotos = [
     "IMG-20240630-WA0007.jpg",
     "IMG-20240709-WA0053.jpg",
     "IMG-20240709-WA0054.jpg",
-    "IMG-20240712-WA0019.jpg",
-    "IMG-20240712-WA0034.jpg",
-    "IMG-20240712-WA0045.jpg",
-    "IMG-20240712-WA0048.jpg",
     "IMG-20240722-WA0002.jpg",
     "IMG-20240722-WA0004.jpg",
     "IMG-20240722-WA0006.jpg",
@@ -91,7 +86,6 @@ const anifotos = [
     "IMG-20241228-WA0024.jpg",
     "IMG-20241228-WA0031.jpg",
     "IMG-20250114-WA0000.jpg",
-    "IMG-20250120-WA0034.jpg",
     "IMG-20250215-WA0033.jpg",
     "IMG-20250215-WA0036.jpg",
     "IMG-20250215-WA0037.jpg",
@@ -186,6 +180,38 @@ if (urls.length === 0) {
         current = shuffledOrder[currentShuffleIndex];
         showImage(current);
     };
+
+    // --- Carrusel autoplay y play/pause ---
+    let autoPlayInterval = null;
+    const playPauseBtn = document.querySelector('.play-pause');
+    let isPlaying = false;
+
+    function startAutoPlay() {
+        if (autoPlayInterval) return;
+        autoPlayInterval = setInterval(() => {
+            nextBtn.click();
+        }, 5000);
+        isPlaying = true;
+        playPauseBtn.textContent = '⏸️';
+    }
+
+    function stopAutoPlay() {
+        clearInterval(autoPlayInterval);
+        autoPlayInterval = null;
+        isPlaying = false;
+        playPauseBtn.textContent = '▶️';
+    }
+
+    playPauseBtn.onclick = () => {
+        if (isPlaying) {
+            stopAutoPlay();
+        } else {
+            startAutoPlay();
+        }
+    };
+
+    // Iniciar autoplay por defecto
+    startAutoPlay();
 }
 
 // Animación de "flores" usando imágenes PNG personalizadas
@@ -196,7 +222,9 @@ let flowers = [];
 const flowerImages = [
     'flores/flor1.png',
     'flores/flor2.png',
-    'flores/flor3.png'
+    'flores/flor3.png',
+    'flores/flor4.png',
+    'flores/flor5.png',
 ];
 const loadedImages = [];
 let imagesLoaded = 0;
