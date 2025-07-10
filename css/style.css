@@ -81,7 +81,7 @@ h1 {
     z-index: 1;
 }
 
-button.prev, button.next {
+button.prev, button.next, button.play-pause {
     background: #f5e1d3;
     border: none;
     border-radius: 50%;
@@ -93,7 +93,13 @@ button.prev, button.next {
     transition: background 0.2s;
     box-shadow: 0 2px 8px rgba(180,138,120,0.08);
 }
-button.prev:hover, button.next:hover {
+
+button.play-pause {
+    margin-left: 10px;
+    font-size: 1.2em;
+}
+
+button.prev:hover, button.next:hover, button.play-pause:hover {
     background: #f2d6c2;
 }
 

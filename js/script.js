@@ -6,7 +6,18 @@ const nextBtn = document.querySelector('.next');
 let current = 0;
 const carousel = document.querySelector('.carousel-images');
 let images = [];
+let shuffledOrder = []; // Array para mantener el orden aleatorio
+let currentShuffleIndex = 0; // Índice actual en el array barajado
 
+// Función para barajar un array (algoritmo Fisher-Yates)
+function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
 
 function showImage(index) {
     // Siempre actualiza el array de imágenes por si el DOM cambió
@@ -137,19 +148,42 @@ if (urls.length === 0) {
         `<img src="${url}" alt="Foto ${i+1}"${i === 0 ? ' class="active"' : ''}>`
     ).join('');
     images = Array.from(document.querySelectorAll('.carousel-images img'));
-    current = 0;
+    
+    // Crear orden aleatorio inicial
+    shuffledOrder = shuffleArray(Array.from({length: images.length}, (_, i) => i));
+    currentShuffleIndex = 0;
+    current = shuffledOrder[currentShuffleIndex];
     showImage(current);
 
     prevBtn.onclick = () => {
         images = Array.from(document.querySelectorAll('.carousel-images img'));
         if (images.length === 0) return;
-        current = (current - 1 + images.length) % images.length;
+        
+        // Ir al anterior en el orden aleatorio
+        currentShuffleIndex = (currentShuffleIndex - 1 + shuffledOrder.length) % shuffledOrder.length;
+        
+        // Si completamos un ciclo hacia atrás, rebarajar
+        if (currentShuffleIndex === shuffledOrder.length - 1) {
+            shuffledOrder = shuffleArray(Array.from({length: images.length}, (_, i) => i));
+        }
+        
+        current = shuffledOrder[currentShuffleIndex];
         showImage(current);
     };
+    
     nextBtn.onclick = () => {
         images = Array.from(document.querySelectorAll('.carousel-images img'));
         if (images.length === 0) return;
-        current = (current + 1) % images.length;
+        
+        // Ir al siguiente en el orden aleatorio
+        currentShuffleIndex = (currentShuffleIndex + 1) % shuffledOrder.length;
+        
+        // Si completamos un ciclo completo, rebarajar para el siguiente ciclo
+        if (currentShuffleIndex === 0) {
+            shuffledOrder = shuffleArray(Array.from({length: images.length}, (_, i) => i));
+        }
+        
+        current = shuffledOrder[currentShuffleIndex];
         showImage(current);
     };
 }
