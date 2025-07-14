@@ -1,18 +1,23 @@
-// Carrusel de fotos simple sin Firebase
 // Carrusel de fotos dinámico desde .txt de Google Drive
 
 const prevBtn = document.querySelector('.prev');
 const nextBtn = document.querySelector('.next');
 const playPauseBtn = document.querySelector('.play-pause');
 let current = 0;
-const carousel = document.querySelector('.carousel-images');
+const carousel = document.querySelector('.carouselfunction startFlowers() {
+    flowers = [];
+    for (let i = 0; i < 18; i++) {
+        flowers.push(randomFlower());
+    }
+    animateFlowers();
+    // Inicializar aviones después de las flores
+    initPlanes();
+}');
 let images = [];
 let shuffledOrder = []; // Array para mantener el orden aleatorio
 let currentShuffleIndex = 0; // Índice actual en el array barajado
 let autoplayInterval;
-let isPlaying = false; // Cambiado: iniciar pausado
-
-const playPauseIcon = document.getElementById('playPauseIcon');
+let isPlaying = false;
 
 // Función para barajar un array (algoritmo Fisher-Yates)
 function shuffleArray(array) {
@@ -24,48 +29,15 @@ function shuffleArray(array) {
     return shuffled;
 }
 
-
-// No longer needed: showImage. Now handled by renderCarousel.
-
-function nextImage() {
-    if (urls.length === 0) return;
-    currentShuffleIndex = (currentShuffleIndex + 1) % shuffledOrder.length;
-    if (currentShuffleIndex === 0) {
-        shuffledOrder = shuffleArray(Array.from({length: urls.length}, (_, i) => i));
-    }
-    current = shuffledOrder[currentShuffleIndex];
-    renderCarousel();
-}
-
-function startAutoplay() {
-    if (isPlaying) return;
-    isPlaying = true;
-    if (playPauseIcon) {
-      playPauseIcon.src = 'css/pause.png';
-      playPauseIcon.className = 'icon-pause';
-    }
-    autoplayInterval = setInterval(() => {
-      nextImage();
-      renderCarousel();
-    }, 5000); // Cambia cada 5 segundos
-}
-
-function stopAutoplay() {
-    if (!isPlaying) return;
-    isPlaying = false;
-    if (playPauseIcon) {
-      playPauseIcon.src = 'css/play.png';
-      playPauseIcon.className = 'icon-play';
-    }
-    clearInterval(autoplayInterval);
-}
-
-function toggleAutoplay() {
-    if (isPlaying) {
-        stopAutoplay();
-    } else {
-        startAutoplay();
-    }
+function showImage(index) {
+    // Siempre actualiza el array de imágenes por si el DOM cambió
+    images = Array.from(document.querySelectorAll('.carousel-images img'));
+    images.forEach((img, i) => {
+        img.classList.toggle('active', i === index);
+    });
+    // Deshabilita botones si no hay imágenes
+    prevBtn.disabled = images.length === 0;
+    nextBtn.disabled = images.length === 0;
 }
 
 // Leer las imágenes de la carpeta local "anifotos" y generar el carrusel
@@ -171,111 +143,86 @@ const anifotos = [
 ];
 
 const urls = anifotos.map(filename => `anifotos/${filename}`);
-// --- INTEGRACIÓN FIREBASE FIRESTORE PARA MENSAJES PERSISTENTES ---
-// Configuración Firebase (rellena con tus credenciales reales)
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyA_IcjbhzZxcf78d4FGca2SiLcZmU-8NGU",
-  authDomain: "aniversario-3a910.firebaseapp.com",
-  projectId: "aniversario-3a910",
-  storageBucket: "aniversario-3a910.appspot.com",
-  messagingSenderId: "901698875349",
-  appId: "1:901698875349:web:fdca923863aaeea58c975c",
-  measurementId: "G-CEEDYF2JJ5"
-};
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-const db = firebase.firestore();
-// Mensajes cacheados localmente para evitar recargas innecesarias
-const tempMessages = {};
-function renderCarousel() {
-  if (urls.length === 0) {
+if (urls.length === 0) {
     carousel.innerHTML = '<div class="no-images-msg">No hay imágenes para mostrar.</div>';
     images = [];
     prevBtn.disabled = true;
     nextBtn.disabled = true;
-    return;
-  }
-  const idx = current;
-  const url = urls[idx];
-  const photoKey = anifotos[idx];
-  // Si ya está en cache, úsalo; si no, busca en Firestore
-  let savedMsg = tempMessages[photoKey] || '';
-  carousel.innerHTML = `
-    <div class="carousel-flip" id="flipCard">
-      <div class="flip-card-inner">
-        <div class="flip-card-front">
-          <img src="${url}" alt="Foto ${idx+1}" class="active">
-          <button class="flip-btn flip-icon-btn" id="toBackBtn" title="Escribir mensaje" style="position:absolute;bottom:12px;right:12px;z-index:3;padding:6px 8px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.85);border-radius:50%;box-shadow:0 2px 8px #e1b86644;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#bd5532" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17.25V21h3.75l11.06-11.06a2.12 2.12 0 0 0-3-3L3 17.25z"></path><path d="M14.5 6.5l3 3"></path></svg>
-          </button>
-        </div>
-        <div class="flip-card-back">
-          <textarea id="flipMsg" placeholder="Escribe aquí...">${savedMsg}</textarea>
-          <button class="flip-btn" id="toFrontBtn">Volver</button>
-        </div>
-      </div>
-    </div>
-  `;
-  // Flip logic
-  const flipCard = document.getElementById('flipCard');
-  const toBackBtn = document.getElementById('toBackBtn');
-  const toFrontBtn = document.getElementById('toFrontBtn');
-  const flipMsg = document.getElementById('flipMsg');
-  if (toBackBtn) {
-    toBackBtn.onclick = () => {
-      flipCard.classList.add('flipped');
-    };
-  }
-  if (toFrontBtn) {
-    toFrontBtn.onclick = () => {
-      flipCard.classList.remove('flipped');
-    };
-  }
-  if (flipMsg) {
-    // Cargar mensaje desde Firestore si no está en cache
-    if (!tempMessages[photoKey]) {
-      db.collection('flipMessages').doc(photoKey).get().then(doc => {
-        if (doc.exists) {
-          tempMessages[photoKey] = doc.data().message;
-          flipMsg.value = tempMessages[photoKey];
+} else {
+    carousel.innerHTML = urls.map((url, i) =>
+        `<img src="${url}" alt="Foto ${i+1}"${i === 0 ? ' class="active"' : ''}>`
+    ).join('');
+    images = Array.from(document.querySelectorAll('.carousel-images img'));
+    
+    // Crear orden aleatorio inicial
+    shuffledOrder = shuffleArray(Array.from({length: images.length}, (_, i) => i));
+    currentShuffleIndex = 0;
+    current = shuffledOrder[currentShuffleIndex];
+    showImage(current);
+
+    prevBtn.onclick = () => {
+        images = Array.from(document.querySelectorAll('.carousel-images img'));
+        if (images.length === 0) return;
+        
+        // Ir al anterior en el orden aleatorio
+        currentShuffleIndex = (currentShuffleIndex - 1 + shuffledOrder.length) % shuffledOrder.length;
+        
+        // Si completamos un ciclo hacia atrás, rebarajar
+        if (currentShuffleIndex === shuffledOrder.length - 1) {
+            shuffledOrder = shuffleArray(Array.from({length: images.length}, (_, i) => i));
         }
-      });
+        
+        current = shuffledOrder[currentShuffleIndex];
+        showImage(current);
+    };
+    
+    nextBtn.onclick = nextImage;
+    
+    playPauseBtn.onclick = toggleAutoplay;
+    
+    // Iniciar autoplay automáticamente
+    startAutoplay();
+
+    function nextImage() {
+        images = Array.from(document.querySelectorAll('.carousel-images img'));
+        if (images.length === 0) return;
+        
+        // Ir al siguiente en el orden aleatorio
+        currentShuffleIndex = (currentShuffleIndex + 1) % shuffledOrder.length;
+        
+        // Si completamos un ciclo completo, rebarajar para el siguiente ciclo
+        if (currentShuffleIndex === 0) {
+            shuffledOrder = shuffleArray(Array.from({length: images.length}, (_, i) => i));
+        }
+        
+        current = shuffledOrder[currentShuffleIndex];
+        showImage(current);
     }
-    flipMsg.addEventListener('input', () => {
-      tempMessages[photoKey] = flipMsg.value;
-      db.collection('flipMessages').doc(photoKey).set({ message: flipMsg.value });
-    });
-  }
+
+    function startAutoplay() {
+        if (isPlaying) return;
+        isPlaying = true;
+        playPauseBtn.textContent = '⏸️';
+        autoplayInterval = setInterval(nextImage, 5000); // Cambia cada 5 segundos
+    }
+
+    function stopAutoplay() {
+        if (!isPlaying) return;
+        isPlaying = false;
+        playPauseBtn.textContent = '▶️';
+        clearInterval(autoplayInterval);
+    }
+
+    function toggleAutoplay() {
+        if (isPlaying) {
+            stopAutoplay();
+        } else {
+            startAutoplay();
+        }
+    }
+
+    playPauseBtn.onclick = toggleAutoplay;
 }
-
-// Crear orden aleatorio inicial
-shuffledOrder = shuffleArray(Array.from({length: urls.length}, (_, i) => i));
-currentShuffleIndex = 0;
-current = shuffledOrder[currentShuffleIndex];
-renderCarousel();
-
-prevBtn.onclick = () => {
-  if (urls.length === 0) return;
-  currentShuffleIndex = (currentShuffleIndex - 1 + shuffledOrder.length) % shuffledOrder.length;
-  // No barajar aquí, solo avanzar/retroceder
-  current = shuffledOrder[currentShuffleIndex];
-  renderCarousel();
-};
-nextBtn.onclick = () => {
-  if (urls.length === 0) return;
-  currentShuffleIndex = (currentShuffleIndex + 1) % shuffledOrder.length;
-  // No barajar aquí, solo avanzar/retroceder
-  current = shuffledOrder[currentShuffleIndex];
-  renderCarousel();
-};
-playPauseBtn.onclick = function(e) {
-  if (e.type === 'click' && (e.button === 0 || e.which === 1)) {
-    toggleAutoplay();
-  }
-};
-// NO iniciar autoplay automáticamente
 
 // Animación de "flores" usando imágenes PNG personalizadas
 const canvas = document.getElementById('flowers-bg');
@@ -354,30 +301,28 @@ function startFlowers() {
         flowers.push(randomFlower());
     }
     animateFlowers();
-    // Inicializar aviones después de las flores
-    initPlanes();
 }
 
 // Funcionalidad de aviones con pancartas
 function initPlanes() {
     const colors = [
         {
-            a: '#373b44',
-            b: '#dee1b6',
-            c: '#73c8a9',
-            d: '#e1b866',
+            a: '#8b6544',
+            b: '#f5e1d3',
+            c: '#d4b896',
+            d: '#b48a78',
         },
         {
-            a: '#bd5532',
-            b: '#dee1b6',
-            c: '#e1b866',
-            d: '#73c8a9',
+            a: '#ff6b6b',
+            b: '#ffd93d',
+            c: '#ffef5d',
+            d: '#fc65c9',
         },
         {
-            a: '#373b44',
-            b: '#73c8a9',
-            c: '#dee1b6',
-            d: '#bd5532',
+            a: '#b48a78',
+            b: '#f5e1d3',
+            c: '#e8cdb5',
+            d: '#d4b896',
         }
     ];
 
@@ -399,22 +344,9 @@ function initPlanes() {
     const planeTimer = [];
     const wrapper = document.querySelector('.wrapper');
     const cellD = 60;
-    // Todos los valores en cero para que los aviones pasen pegados al borde superior
-    const topValues = [0, 0, 0, 0];
-    // Escribe aquí tus frases personalizadas, una por elemento
-    let bannerContents = [
-        'Tu me haces feliz',
-        'Me encanta compartir contigo',
-        'Por eso siempre querré darte más de mi',
-        'También otras sorpresas',
-        '¿esperas otra?',
-        'Claro que sí hay... y habrán',
-        'Un día más contigo',
-        'Es lo que necesito para estar bien',
-        'Ah, espera',
-        'Otro regalo llega la otra semana'
-    ];
-    const banners = bannerContents;
+    const topValues = [0.5, 1.5, 2.5, 3.5];
+    let bannerContent = '¡2#años#de#amor#infinito!#💕#Feliz#aniversario#mi#alma#gemela#❤️';
+    const banners = [];
     let spriteId = 0;
     let topIndex = 3;
     let count = 0;
@@ -480,8 +412,7 @@ function initPlanes() {
             count = 0;
             return;
         }
-        // Restar un margen mayor para que el avión pase aún más arriba del borde superior
-        plane.style.top = `${topValues[topIndex] * plane.offsetHeight + (20 * topValues[topIndex]) - 40}px`;
+        plane.style.top = `${topValues[topIndex] * plane.offsetHeight + (20 * topValues[topIndex])}px`;
         plane.style.left = '100%';
         plane.style.transition = '6s ease';
 
@@ -502,7 +433,41 @@ function initPlanes() {
         }, 20000);
     };
 
-    // No se necesita splitTextForBanners ni calcWrapIndex con array
+    const calcWrapIndex = () => {
+        const flexWrapper = document.querySelector('.flex_wrapper');
+        const wrapIndex = [];
+        flexWrapper.innerHTML = bannerContent.split('#').map(word => {
+            return `
+                <div class="message_ghost">
+                    ${word}
+                </div>
+            `;
+        }).join('');
+        const messageGhosts = document.querySelectorAll('.message_ghost');
+        messageGhosts.forEach((message, i) => {
+            if (i === (messageGhosts.length - 1)) return;
+            if (message.getBoundingClientRect().y < messageGhosts[i + 1].getBoundingClientRect().y) {
+                wrapIndex.push(i);
+            }
+        });
+        return wrapIndex;
+    };
+
+    const splitTextForBanners = () => {
+        banners.length = 0;
+        const word = [];
+        const wrapIndex = calcWrapIndex();
+        let hashCount = -1;
+        bannerContent.split('').forEach((letter, i) => {
+            if (letter === '#') hashCount++;
+            word.push(letter);
+            if ((wrapIndex.find(i => i === hashCount) && letter === '#')) {
+                banners.push(word.join(''));
+                word.length = 0;
+            }
+            if (i === (bannerContent.length - 1)) banners.push(word.join(''));
+        });
+    };
 
     const createTimers = () => {
         planeTimer.length = 0;
@@ -515,24 +480,21 @@ function initPlanes() {
         });
     };
 
-    let shownCount = 0;
-    let intervalId = null;
     const createPlanes = () => {
-        // Limpiar el avión anterior antes de mostrar el nuevo
-        wrapper.innerHTML = '<div class="flex_wrapper"></div>';
-        spriteId = 0;
-        topIndex = 3;
-        count = 0;
-        bannerIndex = 0;
-        createTimers();
-        if (shownCount >= 10) {
-            // Detener el intervalo y no mostrar más aviones
-            if (intervalId) clearInterval(intervalId);
-            return;
-        }
-        let bannerText = banners[shownCount];
-        createPlane(bannerText.replaceAll('#', ' '));
-        shownCount++;
+        const bannerText = banners[bannerIndex].split('').reverse().join('')[0] === '#'
+            ? banners[bannerIndex]
+            : banners[bannerIndex] += '#';
+
+        if (bannerText !== '#') createPlane(bannerText.replaceAll('#', ' '));
+        bannerIndex = (bannerIndex + 1) < banners.length ? bannerIndex + 1 : 0;
+
+        if (bannerIndex === 0) spriteId = 0;
+
+        count++;
+        setTimeout(() => {
+            if (count === banners.length) return;
+            createPlanes();
+        }, 3000);
     };
 
     const resetPlanes = () => {
@@ -551,20 +513,23 @@ function initPlanes() {
         createPlanes();
     };
 
+    splitTextForBanners();
     createTimers();
-    createPlanes(); // Muestra la primera frase al cargar
+    createPlanes();
 
-    // Mostrar la siguiente frase cada 20 segundos, hasta el total de frases
-    intervalId = setInterval(() => {
-        createPlanes();
-    }, 25000);
+    // Repetir cada 20 segundos
+    setInterval(resetPlanes, 20000);
 
     window.addEventListener('resize', resetPlanes);
+}
 
-    // Función global para cambiar el texto de la pancarta dinámicamente
-    window.cambiarPancarta = (nuevoTexto) => {
-        bannerContent = nuevoTexto;
-        resetPlanes();
-        console.log(`Pancarta cambiada a: "${nuevoTexto}"`);
-    };
+// Inicializar aviones después de cargar las flores
+if (imagesLoaded === flowerImages.length) {
+    startFlowers();
+    initPlanes();
+} else {
+    // Si las flores aún no se han cargado, esperar
+    setTimeout(() => {
+        initPlanes();
+    }, 1000);
 }

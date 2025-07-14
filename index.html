@@ -3,28 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feliz Aniversario</title>
+    <title>Feliz Aniversario, Mon amour </title>
+    <!-- Google Fonts: Roboto (general) y Dancing Script (romántico) -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <!-- MENÚ LATERAL IZQUIERDO -->
+    <div class="side-menu-container">
+      <nav class="side-menu">
+        <button class="menu-btn color1" data-menu="0"></button>
+        <button class="menu-btn color2" data-menu="1"></button>
+        <button class="menu-btn color3" data-menu="2"></button>
+        <button class="menu-btn color4" data-menu="3"></button>
+        <button class="menu-btn color5" data-menu="4"></button>
+        <button class="menu-btn color6" data-menu="5"></button>
+        <button class="menu-btn color7" data-menu="6"></button>
+        <button class="menu-btn color8" data-menu="7"></button>
+        <div id="menu-btn-indicator" class="menu-btn-indicator" style="display:none">
+          <svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g>
+              <circle cx="27" cy="27" r="7" fill="#FFD234"/>
+              <g>
+                <ellipse cx="27" cy="10" rx="5" ry="10" fill="#FFCC3B"/>
+                <ellipse cx="27" cy="44" rx="5" ry="10" fill="#FFB534"/>
+                <ellipse cx="10" cy="27" rx="10" ry="5" fill="#FF8F2C"/>
+                <ellipse cx="44" cy="27" rx="10" ry="5" fill="#F4AE42"/>
+                <ellipse cx="15" cy="15" rx="6" ry="3" fill="#F9C046"/>
+                <ellipse cx="39" cy="15" rx="6" ry="3" fill="#D8CB34"/>
+                <ellipse cx="15" cy="39" rx="6" ry="3" fill="#B3B232"/>
+                <ellipse cx="39" cy="39" rx="6" ry="3" fill="#5C6B00"/>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </nav>
+      <div class="side-menu-content">
+        <div class="menu-content" data-content="0"> Llegas a lo más recondito de mi mente. La embelesas mediante la lectura que narra tu cuerpo al sentirte </div>
+        <div class="menu-content" data-content="1"> Eres un museo de arte, un compendio de recuerdos fascinantes, un refugio de emociones duraderas </div>
+<div class="menu-content" data-content="2" type="text" style="direction:ltr">
+<br>Si fueras un río,<br>
+yo sería una canoa tallada en madera, con magia despertada al recorrer tus ondulaciones<br>
+de agua resplandeciente.<br><br>
+Tu corriente arrastraría mi cuerpo empapado 
+en tu esencia hacia un manantial revitalizante: paraíso indómito al que pertenezco.<br><br>
+Me guiarías por cauces diversos y contemplativos,<br>
+mientras abres paso a las ofrendas que guardo en mi interior. 
+Y llegará el momento de lanzarlas hacia tu desembocadura:
+Destino que solo tú me puedes mostrar desde tu caudal sereno.<br><br>
+Los peces de tu amor rozan mi piel. Saltan en mi vientre. Siempre habrá espacio para ellos.<br><br>
+Bosque magno emergente de tus profundidades,<br>
+rodeando de paz nuestro viaje lleno de gozos y emociones.<br>
+El trayecto inequívoco que nos une por siempre.<br><br>
+</div>
+        <div class="menu-content" data-content="3">Texto del botón 4 (personaliza aquí)</div>
+        <div class="menu-content" data-content="4">Texto del botón 5 (personaliza aquí)</div>
+        <div class="menu-content" data-content="5">Texto del botón 6 (personaliza aquí)</div>
+        <div class="menu-content" data-content="6">Texto del botón 7 (personaliza aquí)</div>
+        <div class="menu-content" data-content="7">Texto del botón 8 (personaliza aquí)</div>
+      </div>
+    </div>
+
     <!-- Fondo animado de flores -->
     <canvas id="flowers-bg"></canvas>
+
+    <!-- Aviones con pancartas animados -->
+    <div class="wrapper pointer-events-none">
+        <div class="flex_wrapper"></div>
+    </div>
+
     <div class="container">
-        <h1>Feliz 2º Aniversario</h1>
+        <h1>Feliz 2º Aniversario 💗<br> Mi alma gemela 💕</h1>
         <div class="carousel">
-            <button class="prev">&#10094;</button>
+            <button class="prev"><img src="css/prev.png" alt="Anterior" class="icon-arrow"></button>
             <div class="carousel-images">
                 <!-- Las imágenes se insertan dinámicamente con JavaScript -->
             </div>
-            <button class="next">&#10095;</button>
-            <button class="play-pause">▶️</button>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 48px;">
+                <button class="next"><img src="css/next.png" alt="Siguiente" class="icon-arrow"></button>
+                <button class="play-pause"><img src="css/play.png" alt="Play/Pause" class="icon-play" id="playPauseIcon"></button>
+            </div>
         </div>
-        <p class="dedication">Gracias por estos dos años maravillosos juntos. Te amo.</p>
+        <p class="dedication">Gracias por estos dos años maravillosos juntos 💖<br> Te amo demasiado ❤️</p>
         <!-- Spotify embed -->
         <div class="spotify-player">
             <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/2TvcPy3tMB6BbPWPjhqeJx?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
         </div>
     </div>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="js/script.js"></script>
+    <script>
+    // Lógica menú lateral con toggle, efecto ripple y flor indicadora
+    const menuBtns = document.querySelectorAll('.menu-btn');
+    const menuContents = document.querySelectorAll('.menu-content');
+    const indicator = document.getElementById('menu-btn-indicator');
+    let lastOpen = null;
+    menuBtns.forEach(btn => {
+      btn.addEventListener('click', e => {
+        if (e.button !== 0) return; // solo click izquierdo
+        // Ripple effect
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple';
+        btn.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+
+        const idx = btn.getAttribute('data-menu');
+        const content = document.querySelector('.menu-content[data-content="' + idx + '"]');
+        if (content.style.display === 'block') {
+          content.style.display = 'none';
+          indicator.style.display = 'none';
+          lastOpen = null;
+        } else {
+          menuContents.forEach(c => c.style.display = 'none');
+          content.style.display = 'block';
+          // Mover el indicador floral sobre el botón activo
+          indicator.style.display = 'flex';
+          indicator.style.position = 'absolute';
+          indicator.style.left = (btn.offsetLeft + btn.offsetWidth/2 + 2) + 'px'; // aún más a la derecha
+          indicator.style.top = (btn.offsetTop + btn.offsetHeight/2 + 4) + 'px';  // un poco más abajo
+          lastOpen = idx;
+        }
+      });
+    });
+    // Ocultar todos al inicio
+    menuContents.forEach(c => c.style.display = 'none');
+    </script>
 </body>
 </html>
