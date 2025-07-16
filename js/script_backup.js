@@ -305,29 +305,25 @@ function startFlowers() {
 
 // Funcionalidad de aviones con pancartas
 function initPlanes() {
-    const colors = [
-        {
-            a: '#8b6544',
-            b: '#f5e1d3',
-            c: '#d4b896',
-            d: '#b48a78',
-        },
-        {
-            a: '#ff6b6b',
-            b: '#ffd93d',
-            c: '#ffef5d',
-            d: '#fc65c9',
-        },
-        {
-            a: '#b48a78',
-            b: '#f5e1d3',
-            c: '#e8cdb5',
-            d: '#d4b896',
-        }
+    // Colores para modo diurno y nocturno
+    const colorsDay = [
+        { a: '#8b6544', b: '#f5e1d3', c: '#d4b896', d: '#b48a78' },
+        { a: '#ff6b6b', b: '#ffd93d', c: '#ffef5d', d: '#fc65c9' },
+        { a: '#b48a78', b: '#f5e1d3', c: '#e8cdb5', d: '#d4b896' }
+    ];
+    const colorsNight = [
+        { a: '#fffbe9', b: '#2a3557', c: '#3a4a7a', d: '#232b45' },
+        { a: '#ffe6c1', b: '#232b45', c: '#3a4a7a', d: '#fffbe9' },
+        { a: '#fffbe9', b: '#3a4a7a', c: '#232b45', d: '#ffe6c1' }
     ];
 
+    function getCurrentColors() {
+        return document.body.classList.contains('night-mode') ? colorsNight : colorsDay;
+    }
+
     const planeSvg = () => {
-        const { a, b, c, d } = colors[Math.floor(Math.random() * colors.length)];
+        const palette = getCurrentColors();
+        const { a, b, c, d } = palette[Math.floor(Math.random() * palette.length)];
         return `<svg x="0px" y="0px" width="100%" height="100%" viewBox="0 0 52 26"><path fill="${a}" d="M 35 2h1v1h-1v-1"/> <path fill="${a}" d="M 42 2h1v1h-1v-1"/> <path fill="${a}" d="M 9 3h1v1h-1v-1"/> <path fill="${a}" d="M 16 3h1v1h-1v-1"/> <path fill="${a}" d="M 34 3h1v6h-1v-6"/> <path fill="${b}" d="M 35 3h1v1h1v1h4v-1h1v-1h1v6h-1v1h-6v-1h-1v-6"/> <path fill="${a}" d="M 36 3h1v1h-1v-1"/> <path fill="${a}" d="M 41 3h1v1h-1v-1"/> <path fill="${a}" d="M 43 3h1v6h-1v-6"/> <path fill="${a}" d="M 8 4h1v6h-1v-6"/> <path fill="${b}" d="M 9 4h1v1h1v1h4v-1h1v-1h1v6h-1v1h-6v-1h-1v-6"/> <path fill="${a}" d="M 10 4h1v1h-1v-1"/> <path fill="${a}" d="M 15 4h1v1h-1v-1"/> <path fill="${a}" d="M 17 4h1v6h-1v-6"/> <path fill="${a}" d="M 37 4h4v1h-4v-1"/> <path fill="${a}" d="M 11 5h4v1h-4v-1"/> <path fill="${c}" d="M 23 6h2v6h-1v-1h-1v-1h-3v-1h1v-1h1v-1h1v-1"/> <path fill="${a}" d="M 36 6h1v2h-1v-2"/> <path fill="${a}" d="M 41 6h1v2h-1v-2"/> <path fill="${c}" d="M 49 6h2v6h-1v-1h-1v-1h-3v-1h1v-1h1v-1h1v-1"/> <path fill="${a}" d="M 10 7h1v2h-1v-2"/> <path fill="${a}" d="M 15 7h1v2h-1v-2"/> <path fill="${a}" d="M 38 8h2v1h-2v-1"/> <path fill="${a}" d="M 12 9h2v1h-2v-1"/> <path fill="${a}" d="M 35 9h1v1h-1v-1"/> <path fill="${a}" d="M 42 9h1v1h-1v-1"/> <path fill="${d}" d="M 5 10h3v1h1v1h1v1h6v-1h1v-1h1v-1h5v1h1v1h1v2h-4v1h1v1h1v1h-1v1h-5v-3h-1v-1h-6v1h-1v3h-6v-1h-1v-1h-1v-3h1v-1h1v-1h2v-1"/> <path fill="${c}" d="M 8 10h1v1h-1v-1"/> <path fill="${a}" d="M 9 10h1v1h-1v-1"/> <path fill="${a}" d="M 16 10h1v1h-1v-1"/> <path fill="${c}" d="M 17 10h1v1h-1v-1"/> <path fill="${d}" d="M 31 10h3v1h1v1h1v1h6v-1h1v-1h1v-1h5v1h1v1h1v2h-4v1h1v1h1v1h-1v1h-5v-3h-1v-1h-6v1h-1v3h-6v-1h-1v-1h-1v-3h1v-1h1v-1h2v-1"/> <path fill="${c}" d="M 34 10h1v1h-1v-1"/> <path fill="${b}" d="M 35 10h1v1h-1v-1"/> <path fill="${a}" d="M 36 10h6v1h-6v-1"/> <path fill="${b}" d="M 42 10h1v1h-1v-1"/> <path fill="${c}" d="M 43 10h1v1h-1v-1"/> <path fill="${c}" d="M 9 11h1v1h-1v-1"/> <path fill="${a}" d="M 10 11h6v1h-6v-1"/> <path fill="${c}" d="M 16 11h1v1h-1v-1"/> <path fill="${c}" d="M 35 11h1v1h-1v-1"/> <path fill="${b}" d="M 36 11h6v1h-6v-1"/> <path fill="${c}" d="M 42 11h1v1h-1v-1"/> <path fill="${c}" d="M 10 12h6v1h-6v-1"/> <path fill="${c}" d="M 36 12h6v1h-6v-1"/> <path fill="${c}" d="M 10 14h6v1h1v7h-1v1h-3v-1h-1v-1h-1v-1h-1v-1h-1v-4h1v-1"/> <path fill="${c}" d="M 21 14h4v4h-1v-1h-1v-1h-1v-1h-1v-1"/> <path fill="${c}" d="M 36 14h6v1h1v7h-1v1h-3v-1h-1v-1h-1v-1h-1v-1h-1v-4h1v-1"/> <path fill="${c}" d="M 47 14h4v4h-1v-1h-1v-1h-1v-1h-1v-1"/></svg>`;
     };
 
@@ -529,6 +525,10 @@ if (imagesLoaded === flowerImages.length) {
     initPlanes();
 } else {
     // Si las flores aún no se han cargado, esperar
+    setTimeout(() => {
+        initPlanes();
+    }, 1000);
+}
     setTimeout(() => {
         initPlanes();
     }, 1000);

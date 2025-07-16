@@ -9,6 +9,13 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <!-- Botón modo nocturno -->
+    <button id="night-mode-btn" title="Modo nocturno" style="position:fixed;top:18px;right:28px;z-index:2000;background:none;border:none;cursor:pointer;width:44px;height:44px;">
+      <img id="night-mode-icon" src="css/sun.gif" alt="Modo nocturno" style="width:38px;height:38px;">
+    </button>
+    <!-- Canvas para estrellas modo nocturno -->
+    <canvas id="stars-bg" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:1;pointer-events:none;display:none;"></canvas>
+
     <!-- MENÚ LATERAL IZQUIERDO -->
     <div class="side-menu-container">
       <nav class="side-menu">
@@ -221,10 +228,73 @@ El trayecto inequívoco que nos une por siempre.<br><br>
 
     requestAnimationFrame(moveMapache);
   });
+
+  // Modo nocturno
+  const nightBtn = document.getElementById('night-mode-btn');
+  const nightIcon = document.getElementById('night-mode-icon');
+  const starsCanvas = document.getElementById('stars-bg');
+  let nightMode = false;
+
+  function setNightMode(on) {
+    document.body.classList.toggle('night-mode', on);
+    starsCanvas.style.display = on ? 'block' : 'none';
+    nightIcon.src = on ? 'css/moon.gif' : 'css/sun.gif';
+    nightBtn.title = on ? 'Modo diurno' : 'Modo nocturno';
+  }
+
+  nightBtn.onclick = function() {
+    nightMode = !nightMode;
+    setNightMode(nightMode);
+    if (nightMode) startStars();
+  };
+
+  // Animación de estrellas
+  function startStars() {
+    const ctx = starsCanvas.getContext('2d');
+    function resizeStars() {
+      starsCanvas.width = window.innerWidth;
+      starsCanvas.height = window.innerHeight;
+    }
+    resizeStars();
+    window.addEventListener('resize', resizeStars);
+
+    let stars = [];
+    for (let i = 0; i < 60; i++) {
+      stars.push({
+        x: Math.random() * starsCanvas.width,
+        y: Math.random() * starsCanvas.height,
+        r: 0.7 + Math.random() * 1.8,
+        alpha: 0.5 + Math.random() * 0.5,
+        speed: 0.008 + Math.random() * 0.012,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+    function animateStars() {
+      ctx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
+      for (let s of stars) {
+        s.phase += s.speed;
+        ctx.globalAlpha = s.alpha + Math.sin(s.phase) * 0.3;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = "#fffbe9";
+        ctx.shadowColor = "#fffbe9";
+        ctx.shadowBlur = 8;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+      ctx.globalAlpha = 1;
+      if (nightMode) requestAnimationFrame(animateStars);
+    }
+    animateStars();
+  }
     </script>
 
     <!-- Mapache animado -->
     <img id="mapache-animado" src="css/mapache.gif" alt="Mapache" style="position:fixed;left:0;bottom:0;width:80px;height:auto;z-index:1200;pointer-events:none;">
+
+    <!-- Mariposas flotando mágicamente -->
+    <img src="css/butterfly1.png" class="butterfly" style="top:12%;left:8%;animation-delay:0s;">
+    <img src="css/butterfly2.png" class="butterfly" style="top:22%;left:78%;animation-delay:2.2s;">
+    <img src="css/butterfly3.png" class="butterfly" style="top:48%;left:18%;animation-delay:1.1s;">
 </body>
-</html>
 </html>

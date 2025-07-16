@@ -598,6 +598,39 @@ button.prev:hover, button.next:hover, button.play-pause:hover {
     min-height: unset !important;
     box-sizing: border-box !important;
     margin-top: 69px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+  }
+  .carousel {
+    order: 2 !important;
+  }
+  .dedication {
+    order: 3 !important;
+  }
+  .spotify-player {
+    order: 4 !important;
+    width: 94vw !important;
+    max-width: 98vw !important;
+    margin-top: 18px !important;
+    margin-bottom: 18px !important;
+    z-index: 2 !important;
+    box-sizing: border-box !important;
+  }
+  .lista-deseos-panel {
+    position: static !important;
+    top: unset !important;
+    right: unset !important;
+    transform: none !important;
+    margin-top: 0 !important;
+    margin-bottom: 18px !important;
+    width: 94vw !important;
+    max-width: 98vw !important;
+    min-width: 0 !important;
+    z-index: 2 !important;
+    order: 5 !important;
+    box-sizing: border-box !important;
   }
   .carousel-images {
     width: 90vw;
@@ -774,7 +807,7 @@ button.prev:hover, button.next:hover, button.play-pause:hover {
   z-index: 1002;
   position: fixed;
   top: 50%;
-  right: 32px;
+  right: 53px; /* aumentado el margen derecho (antes 32px) */
   transform: translateY(-50%);
   margin: 0;
   font-family: 'Dancing Script', 'Roboto', cursive, sans-serif;
@@ -846,54 +879,117 @@ button.prev:hover, button.next:hover, button.play-pause:hover {
   background: linear-gradient(90deg, #bd5532 80%, #ffb6b6 100%);
   box-shadow: 0 4px 16px #e1b86655;
 }
-@media screen and (max-width: 900px) {
-  .lista-deseos-panel {
-    right: 8px;
-    min-width: 180px;
-    max-width: 90vw;
-    padding: 18px 8px 18px 8px;
-  }
+
+/* Animación pop para botones */
+@keyframes pop-btn {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12); }
+  60% { transform: scale(0.97); }
+  100% { transform: scale(1); }
 }
-@media screen and (max-width: 600px) {
-  html, body {
-    overflow-x: hidden;
-    width: 100vw;
-    box-sizing: border-box;
-  }
-  .container {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  .container > h1,
-  .container > .carousel,
-  .container > .dedication,
-  .container > .spotify-player,
-  .container > .lista-deseos-panel,
-  .izquierda,
-  .carousel,
-  .lista-deseos-panel {
-    width: 100%;
-    box-sizing: border-box;
-    margin-left: 0;
-    margin-right: 0;
-    position: static;
-    left: auto;
-    right: auto;
-    top: auto;
-    bottom: auto;
-    transform: none;
-    float: none;
-    clear: both;
-    z-index: auto;
-  }
-  .lista-deseos-panel {
-    border-radius: 16px 16px 0 0;
-    margin: 20px 0 0 0;
-    box-shadow: 0 -4px 24px 0 rgba(129,199,132,0.18), 0 2px 8px #81c78444;
-    padding-left: 0;
-    padding-right: 0;
-  }
+
+/* Botones del carrusel, añadir y menú lateral con transición y pop */
+button.prev,
+button.next,
+button.play-pause,
+.deseo-btn,
+.menu-btn {
+  transition: background 0.3s, color 0.3s, box-shadow 0.3s, transform 0.18s;
+}
+
+button.prev:hover,
+button.next:hover,
+button.play-pause:hover,
+.deseo-btn:hover,
+.menu-btn:hover {
+  background: linear-gradient(135deg, #73c8a9, #e1b866);
+  color: #fff;
+  transform: scale(1.09);
+  box-shadow: 0 8px 24px rgba(115,200,169,0.45);
+  animation: pop-btn 0.22s;
+}
+
+/* Modo nocturno */
+body.night-mode {
+  background: linear-gradient(135deg, #1a2340 60%, #2a3557 100%);
+  color: #fffbe9;
+}
+body.night-mode .container {
+  background: rgba(30,36,60,0.97);
+  border-color: #3a4a7a;
+  color: #fffbe9;
+}
+body.night-mode h1,
+body.night-mode .dedication,
+body.night-mode .menu-content,
+body.night-mode .lista-deseos-panel,
+body.night-mode .deseo-text,
+body.night-mode .deseo-vacio {
+  color: #fffbe9 !important;
+  text-shadow: 0 2px 8px #2a3557;
+}
+body.night-mode .menu-content {
+  background: #232b45;
+  border-color: #3a4a7a;
+}
+body.night-mode .lista-deseos-panel {
+  background: linear-gradient(135deg, #232b45 80%, #2a3557 100%);
+  border-color: #3a4a7a;
+}
+body.night-mode .deseo-btn,
+body.night-mode button.prev,
+body.night-mode button.next,
+body.night-mode button.play-pause,
+body.night-mode .menu-btn {
+  background: linear-gradient(135deg, #3a4a7a 80%, #232b45 100%);
+  color: #fffbe9;
+  border-color: #fffbe9;
+}
+body.night-mode .deseo-btn:hover,
+body.night-mode button.prev:hover,
+body.night-mode button.next:hover,
+body.night-mode button.play-pause:hover,
+body.night-mode .menu-btn:hover {
+  background: linear-gradient(135deg, #232b45 80%, #3a4a7a 100%);
+  color: #ffe6c1;
+  box-shadow: 0 8px 24px #fffbe944;
+}
+body.night-mode .menu-btn-indicator svg {
+  filter: drop-shadow(0 0 8px #fffbe9);
+}
+body.night-mode .flip-card-back {
+  background: #232b45;
+  color: #fffbe9;
+}
+body.night-mode .flip-card-back textarea {
+  background: #232b45;
+  color: #fffbe9;
+  border-color: #3a4a7a;
+}
+body.night-mode .deseo-eliminar {
+  color: #ffe6c1;
+}
+body.night-mode .deseo-eliminar:hover {
+  background: #2a3557;
+  color: #fffbe9;
+}
+
+/* Mariposas flotando mágicamente */
+.butterfly {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+  z-index: 3999;
+  animation: butterfly-float 7s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes butterfly-float {
+  0%   { transform: translateY(0) scale(1) rotate(-8deg);}
+  20%  { transform: translateY(-24px) scale(1.08) rotate(8deg);}
+  40%  { transform: translateY(-48px) scale(1.12) rotate(-8deg);}
+  60%  { transform: translateY(-24px) scale(1.08) rotate(8deg);}
+  80%  { transform: translateY(0) scale(1) rotate(-8deg);}
+  100% { transform: translateY(0) scale(1) rotate(-8deg);}
 }
