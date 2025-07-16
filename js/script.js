@@ -570,81 +570,125 @@ function initPlanes() {
 }
 
 // === LISTA DE DESEOS CON FIREBASE FIRESTORE ===
-const deseosForm = document.getElementById('deseos-form');
-const deseosInput = document.getElementById('deseo-input');
-const deseosLista = document.getElementById('deseos-lista');
-
-// Referencia a la colección de deseos (puedes cambiar el nombre si quieres)
-const deseosRef = db.collection('deseos');
-
-// Renderiza la lista de deseos
-function renderDeseosFirebase(deseos) {
-  deseosLista.innerHTML = '';
-  if (deseos.length === 0) {
-    deseosLista.innerHTML = '<li class="deseo-vacio">(Sin deseos aún)</li>';
-    return;
+(function () {
+  // Espera a que el DOM esté listo
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupDeseos);
+  } else {
+    setupDeseos();
   }
-  const mushroomIcons = [
-    'css/mushroom1.png',
-    'css/mushroom2.png',
-    'css/mushroom3.png',
-    'css/mushroom4.png',
-    'css/mushroom5.png',
-    'css/mushroom6.png',
-  ];
-  deseos.forEach((deseo, idx) => {
-    const li = document.createElement('li');
-    li.className = 'deseo-item' + (deseo.hecho ? ' hecho' : '');
-    const iconUrl = mushroomIcons[Math.floor(Math.random() * mushroomIcons.length)];
-    li.innerHTML = `
-      <label class="deseo-check-label" style="--mushroom-icon: url('${iconUrl}')">
-        <input type="checkbox" class="deseo-check" ${deseo.hecho ? 'checked' : ''} data-id="${deseo.id}">
-        <span class="deseo-text">${deseo.texto}</span>
-      </label>
-      <button class="deseo-eliminar" title="Eliminar" data-id="${deseo.id}">
-        <img src="css/shovel.gif" alt="Eliminar" style="height:1em;vertical-align:middle;margin-top:-3px;">
-      </button>
-    `;
-    deseosLista.appendChild(li);
-  });
-}
 
-// Escucha en tiempo real los cambios en la colección de deseos
-deseosRef.orderBy('fecha', 'asc').onSnapshot(snapshot => {
-  const deseos = [];
-  snapshot.forEach(doc => {
-    deseos.push({ id: doc.id, ...doc.data() });
-  });
-  renderDeseosFirebase(deseos);
-});
+  function setupDeseos() {
+    // Verifica duplicidad de IDs
+    const deseosForm = document.getElementById('deseos-form');
+    const deseosInput = document.getElementById('deseo-input');
+    const deseosLista = document.getElementById('deseos-lista');
+    if (!deseosForm || !deseosInput || !deseosLista) {
+      console.error('No se encontraron los elementos de la lista de deseos. Verifica los IDs en el HTML.');
+      return;
+    }
 
-// Añadir nuevo deseo
-deseosForm.onsubmit = async function(e) {
-  e.preventDefault();
-  const texto = deseosInput.value.trim();
-  if (!texto) return;
-  await deseosRef.add({
-    texto,
-    hecho: false,
-    fecha: new Date()
-  });
-  deseosInput.value = '';
-};
+    // Verifica que solo haya un elemento con cada ID
+    ['deseos-form', 'deseo-input', 'deseos-lista'].forEach(id => {
+      if (document.querySelectorAll(`#${id}`).length > 1) {
+        console.error(`Duplicidad de ID: ${id}. Solo debe haber uno en el HTML.`);
+      }
+    });
 
-// Eliminar o marcar como hecho
-deseosLista.onclick = async function(e) {
-  let btn = null;
-  if (e.target.classList.contains('deseo-eliminar')) {
-    btn = e.target;
-  } else if (e.target.tagName === 'IMG' && e.target.parentElement.classList.contains('deseo-eliminar')) {
-    btn = e.target.parentElement;
+    // Verifica inicialización de Firebase
+    if (!window.firebase || !window.firebase.firestore) {
+      console.error('Firebase no está inicializado correctamente.');
+      return;
+    }
+    const db = window.firebase.firestore();
+    const deseosRef = db.collection('deseos');
+
+    function renderDeseosFirebase(deseos) {
+      deseosLista.innerHTML = '';
+      if (deseos.length === 0) {
+        deseosLista.innerHTML = '<li class="deseo-vacio">(Sin deseos aún)</li>';
+        return;
+      }
+      const mushroomIcons = [
+        'css/mushroom1.png',
+        'css/mushroom2.png',
+        'css/mushroom3.png',
+        'css/mushroom4.png',
+        'css/mushroom5.png',
+        'css/mushroom6.png',
+      ];
+      deseos.forEach((deseo) => {
+        const li = document.createElement('li');
+        li.className = 'deseo-item' + (deseo.hecho ? ' hecho' : '');
+        const iconUrl = mushroomIcons[Math.floor(Math.random() * mushroomIcons.length)];
+        li.innerHTML = `
+          <label class="deseo-check-label" style="--mushroom-icon: url('${iconUrl}')">
+            <input type="checkbox" class="deseo-check" ${deseo.hecho ? 'checked' : ''} data-id="${deseo.id}">
+            <span class="deseo-text">${deseo.texto}</span>
+          </label>
+          <button class="deseo-eliminar" title="Eliminar" data-id="${deseo.id}">
+            <img src="css/shovel.gif" alt="Eliminar" style="height:1em;vertical-align:middle;margin-top:-3px;">
+          </button>
+        `;
+        deseosLista.appendChild(li);
+      });
+    }
+
+    // Escucha en tiempo real los cambios en la colección de deseos
+    deseosRef.orderBy('fecha', 'asc').onSnapshot(snapshot => {
+      const deseos = [];
+      snapshot.forEach(doc => {
+        deseos.push({ id: doc.id, ...doc.data() });
+      });
+      renderDeseosFirebase(deseos);
+    }, err => {
+      console.error('Error al leer deseos de Firestore:', err);
+    });
+
+    // Añadir nuevo deseo
+    deseosForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const texto = deseosInput.value.trim();
+      if (!texto) return;
+      try {
+        await deseosRef.add({
+          texto,
+          hecho: false,
+          fecha: new Date()
+        });
+        deseosInput.value = '';
+      } catch (err) {
+        alert("Error al añadir el deseo. Intenta de nuevo.");
+        console.error('Error al añadir el deseo:', err);
+      }
+    });
+
+    // Eliminar o marcar como hecho
+    deseosLista.addEventListener('click', async function(e) {
+      let btn = null;
+      if (e.target.classList.contains('deseo-eliminar')) {
+        btn = e.target;
+      } else if (e.target.tagName === 'IMG' && e.target.parentElement.classList.contains('deseo-eliminar')) {
+        btn = e.target.parentElement;
+      }
+      if (btn) {
+        const id = btn.getAttribute('data-id');
+        try {
+          await deseosRef.doc(id).delete();
+        } catch (err) {
+          alert("Error al eliminar el deseo.");
+          console.error('Error al eliminar el deseo:', err);
+        }
+      } else if (e.target.classList.contains('deseo-check')) {
+        const id = e.target.getAttribute('data-id');
+        const hecho = e.target.checked;
+        try {
+          await deseosRef.doc(id).update({ hecho });
+        } catch (err) {
+          alert("Error al actualizar el deseo.");
+          console.error('Error al actualizar el deseo:', err);
+        }
+      }
+    });
   }
-  if (btn) {
-    const id = btn.getAttribute('data-id');
-    await deseosRef.doc(id).delete();
-  } else if (e.target.classList.contains('deseo-check')) {
-    const id = e.target.getAttribute('data-id');
-    const hecho = e.target.checked;
-    await deseosRef.doc(id).update({ hecho });
-  }
-};
+})();
