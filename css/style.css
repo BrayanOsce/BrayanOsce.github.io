@@ -426,6 +426,8 @@ canvas#flowers-bg {
     box-sizing: border-box;
     position: relative;
     z-index: 1;
+    /* Mueve la sección más a la izquierda en desktop */
+    margin-left: -34px;
 }
 
 h1 {
@@ -602,6 +604,8 @@ button.prev:hover, button.next:hover, button.play-pause:hover {
     flex-direction: column !important;
     align-items: center !important;
     justify-content: flex-start !important;
+    /* Ajuste para móviles: quita el margen izquierdo */
+    margin-left: 0 !important;
   }
   .carousel {
     order: 2 !important;
@@ -819,7 +823,7 @@ button.prev:hover, button.next:hover, button.play-pause:hover {
   font-family: 'Dancing Script', cursive;
   font-size: 2.1em;
   margin-bottom: 30px;
-  margin-top: 0px;
+  margin-top: 10px;
   color: #e1b866;
   text-align: center;
   letter-spacing: 1px;
@@ -906,7 +910,6 @@ button.play-pause:hover,
   color: #fff;
   transform: scale(1.09);
   box-shadow: 0 8px 24px rgba(115,200,169,0.45);
-  animation: pop-btn 0.22s;
 }
 
 /* Modo nocturno */
@@ -973,6 +976,19 @@ body.night-mode .deseo-eliminar:hover {
   background: #2a3557;
   color: #fffbe9;
 }
+body.night-mode .deseo-item,
+body.night-mode .deseo-check-label,
+body.night-mode .deseo-text {
+  color: #e1b866 !important;
+  text-shadow:
+    0 0 0.5px #000,
+    0 0 2px #232b45,
+    0 1px 8px #000,
+    0 0px 2px #3a4a7a;
+  /* Marco negro más delgado alrededor del texto */
+  -webkit-text-stroke: 0.1px #000;
+  text-stroke: 0.5px #000;
+}
 
 /* Mariposas flotando mágicamente */
 .butterfly {
@@ -992,4 +1008,164 @@ body.night-mode .deseo-eliminar:hover {
   60%  { transform: translateY(-24px) scale(1.08) rotate(8deg);}
   80%  { transform: translateY(0) scale(1) rotate(-8deg);}
   100% { transform: translateY(0) scale(1) rotate(-8deg);}
+}
+.literario-panel {
+  background: linear-gradient(135deg, #fffbe9 80%, #ffe6e6 100%);
+  border: 2.5px solid #e1b866;
+  font-size: medium;
+  border-radius: 22px;
+  box-shadow: 0 8px 32px 0 #e1b86633, 0 2px 8px #bd553244;
+  padding: 28px 18px 18px 18px;
+  max-width: 320px;
+  min-width: 180px;
+  width: 100%;
+  margin: 32px 8px 32px 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1001;
+  font-family: 'Dancing Script', 'Roboto', cursive, sans-serif;
+  position: relative;
+  overflow: visible;
+  max-height: 70vh;
+  /* Altura máxima igual que .lista-deseos-panel */
+  overflow-y: auto;
+}
+.literario-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  width: 100%;
+  justify-content: center;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  /* Mejora: evita overflow y asegura que los hijos no se salgan */
+  max-width: 98%;
+  align-items: flex-start;
+}
+#literario-texto {
+  flex: 2 1 0;
+  min-width: 0;
+  max-width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 2px solid #e1b866;
+  background: linear-gradient(90deg, #fffbe9 80%, #ffe6e6 100%);
+  color: #bd5532;
+  font-size: 1.08em;
+  font-family: 'Dancing Script', 'Roboto', cursive, sans-serif;
+  box-shadow: 0 2px 8px #e1b86633;
+  transition: border 0.22s, box-shadow 0.22s, background 0.22s;
+  outline: none;
+  margin-bottom: 0;
+  margin-right: 0;
+  margin-left: 0;
+  border-width: 2px;
+  /* Mejora: no se sale del panel */
+}
+#literario-texto:focus {
+  border: 2px solid #bd5532;
+  background: #fffbe9;
+  box-shadow: 0 4px 16px #e1b86655;
+}
+#literario-autor {
+  flex: 0 0 110px;
+  width: 110px;
+  min-width: 60px;
+  max-width: 120px;
+  padding: 10px 10px;
+  border-radius: 12px;
+  border: 2px solid #e1b866;
+  background: linear-gradient(90deg, #ffe6e6 80%, #fffbe9 100%);
+  color: #bd5532;
+  font-size: 1em;
+  font-family: 'Roboto', 'Dancing Script', cursive, sans-serif;
+  box-shadow: 0 2px 8px #e1b86622;
+  transition: border 0.22s, box-shadow 0.22s, background 0.22s;
+  outline: none;
+  margin-bottom: 0;
+  margin-right: 0;
+  margin-left: 0;
+  border-width: 2px;
+}
+#literario-autor:focus {
+  border: 2px solid #bd5532;
+  background: #fffbe9;
+  box-shadow: 0 4px 16px #e1b86655;
+}
+.literario-btn {
+  flex: 0 0 80px;
+  min-width: 60px;
+  max-width: 100px;
+  padding-left: 0;
+  padding-right: 0;
+  white-space: nowrap;
+  background: linear-gradient(90deg, #e1b866 80%, #ffb6b6 100%);
+  color: #fffbe9;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.08em;
+  font-family: 'Dancing Script', cursive;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px #e1b86633;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.18s;
+  cursor: pointer;
+  padding: 9px 18px;
+  margin-left: 2px;
+  margin-right: 2px;
+  outline: none;
+}
+.literario-btn:hover, .literario-btn:focus {
+  background: linear-gradient(90deg, #bd5532 80%, #ffb6b6 100%);
+  box-shadow: 0 4px 16px #e1b86655;
+  transform: scale(1.09);
+  outline: none;
+}
+.literario-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  max-height: 100vh;
+  /* Igual que .lista-deseos-panel */
+  overflow-y: auto;
+}
+.literario-item {
+  background: linear-gradient(90deg, #fffbe9 80%, #ffe6e6 100%);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 4px #e1b86622;
+  padding: 12px 16px;
+  font-size: 1.08em;
+  color: #bd5532;
+  cursor: pointer;
+  transition: box-shadow 0.2s, background 0.2s, max-height 0.3s, white-space 0.3s;
+  position: relative;
+  font-family: 'Dancing Script', cursive;
+  overflow: hidden;
+  max-height: none;
+  overflow: visible;
+  /* Elimina cualquier restricción de altura y permite mostrar todo el texto */
+}
+.literario-item.expanded {
+  background: #fffbe9;
+  box-shadow: 0 4px 16px #e1b86655;
+  max-height: none;
+  min-height: 120px;
+  white-space: pre-line;
+  overflow-y: auto;
+  /* Al hacer click, se expande y muestra todo el texto */
+}
+.literario-item {
+  font-family: 'Roboto', Arial, sans-serif;
+  font-size: 1.22em;
+}
+body.night-mode .literario-panel h2 {
+  color: #fffbe9 !important;
+  font-size: 2.1em;
+  text-shadow: 0 2px 8px #2a3557;
+}
+
+#night-mode-btn {
+  right: 20px !important;
 }

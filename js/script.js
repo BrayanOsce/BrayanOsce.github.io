@@ -720,6 +720,108 @@ function initPlanes() {
   }
 })();
 
+// === PANEL LITERARIO SINCRONIZADO FIRESTORE ===
+(function () {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupLiterario);
+  } else {
+    setupLiterario();
+  }
+
+  function setupLiterario() {
+    const form = document.getElementById('literario-form');
+    const textoInput = document.getElementById('literario-texto');
+    const autorInput = document.getElementById('literario-autor');
+    const lista = document.getElementById('literario-lista');
+    if (!form || !textoInput || !autorInput || !lista) return;
+
+    // Firestore
+    if (!window.firebase || !window.firebase.firestore) return;
+    const db = window.firebase.firestore();
+    const litRef = db.collection('literario');
+
+    // Render literario items
+    function renderLiterario(items) {
+      lista.innerHTML = '';
+      if (items.length === 0) {
+        lista.innerHTML = '<li class="literario-item" style="opacity:0.7;">(Sin textos aún)</li>';
+        return;
+      }
+      items.forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'literario-item';
+        li.innerHTML = `
+          <span class="literario-texto">${item.texto}</span>
+          ${item.autor ? `<span class="literario-autor">— ${item.autor}</span>` : ''}
+          <div class="literario-actions">
+            <button class="literario-fav-btn${item.favorito ? ' fav' : ''}" title="Favorito">&#9733;</button>
+            <button class="literario-del-btn" title="Eliminar">&#128465;</button>
+          </div>
+        `;
+        // Expand/collapse on click
+        li.onclick = function(e) {
+          if (e.target.classList.contains('literario-fav-btn') || e.target.classList.contains('literario-del-btn')) return;
+          li.classList.toggle('expanded');
+        };
+        // Favorito
+        li.querySelector('.literario-fav-btn').onclick = async function(e) {
+          e.stopPropagation();
+          try {
+            await litRef.doc(item.id).update({ favorito: !item.favorito });
+          } catch (err) { alert("Error al marcar favorito."); }
+        };
+        // Eliminar
+        li.querySelector('.literario-del-btn').onclick = async function(e) {
+          e.stopPropagation();
+          if (confirm("¿Eliminar este texto?")) {
+            try {
+              await litRef.doc(item.id).delete();
+            } catch (err) { alert("Error al eliminar."); }
+          }
+        };
+        lista.appendChild(li);
+      });
+    }
+
+    // Escucha en tiempo real los textos literarios
+    litRef.orderBy('fechaTS', 'desc').onSnapshot(snapshot => {
+      const items = [];
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        items.push({
+          id: doc.id,
+          texto: data.texto,
+          autor: data.autor,
+          favorito: !!data.favorito,
+          fechaTS: data.fechaTS
+        });
+      });
+      renderLiterario(items);
+    });
+
+    // Añadir nuevo texto literario
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const texto = textoInput.value.trim();
+      const autor = autorInput.value.trim();
+      if (!texto) return;
+      const fechaObj = new Date();
+      try {
+        await litRef.add({
+          texto,
+          autor,
+          favorito: false,
+          fechaTS: fechaObj.getTime()
+        });
+        textoInput.value = '';
+        autorInput.value = '';
+      } catch (err) {
+        alert("Error al guardar el texto.");
+      }
+    });
+  }
+})();
+
 // Detecta cambio de modo nocturno y reinicia los aviones con nuevos colores
 document.addEventListener('DOMContentLoaded', function() {
   const nightBtn = document.getElementById('night-mode-btn');
