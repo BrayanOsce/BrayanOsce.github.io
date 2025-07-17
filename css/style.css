@@ -456,6 +456,7 @@ h1 {
     box-shadow: 0 4px 16px rgba(225,184,102,0.3);
     position: relative;
     margin: 0 10px;
+    perspective: 1200px; /* Asegura el efecto 3D en móvil */
 }
 
 .spotify-player {
@@ -644,6 +645,7 @@ button.prev:hover, button.next:hover, button.play-pause:hover {
     min-width: 220px;
     min-height: 220px;
     margin: 0 2vw;
+    perspective: 1200px; /* Asegura el efecto 3D en móvil */
   }
   .flip-card-back, .flip-card-front {
     font-size: 1em;
@@ -695,17 +697,19 @@ button.prev:hover, button.next:hover, button.play-pause:hover {
   }
   /* Flip-card: solo el reverso debe rotar, no verse como espejo */
   .flip-card-inner {
-    transform-style: preserve-3d;
+    transform-style: preserve-3d !important;
+    transition: transform 0.7s cubic-bezier(.4,0,.2,1) !important;
   }
   .flipped .flip-card-inner {
-    transform: rotateY(180deg);
-  }
-  .flip-card-back {
-    transform: rotateY(180deg);
-    backface-visibility: hidden;
+    transform: rotateY(180deg) !important;
   }
   .flip-card-front {
-    backface-visibility: hidden;
+    backface-visibility: hidden !important;
+    transform: none !important; /* Evita que la imagen se invierta */
+  }
+  .flip-card-back {
+    backface-visibility: hidden !important;
+    transform: rotateY(180deg) !important;
   }
 
 }
