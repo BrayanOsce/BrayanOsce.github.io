@@ -47,7 +47,7 @@ function startAutoplay() {
     autoplayInterval = setInterval(() => {
       nextImage();
       renderCarousel();
-    }, 5000); // Cambia cada 5 segundos
+    }, 30000); // Cambia cada 30 segundos
 }
 
 function stopAutoplay() {
@@ -439,7 +439,8 @@ function initPlanes() {
         'Un día más contigo',
         'Es lo que necesito para estar bien',
         'Ah, espera',
-        'Otro regalo llega la otra semana'
+        'Otro regalo llega la otra semana',
+        'C***U B**K'
     ];
     const banners = bannerContents;
     let spriteId = 0;
@@ -573,7 +574,7 @@ function initPlanes() {
         topIndex = 3;
         count = 0;
         bannerIndex = 0;
-        splitTextForBanners();
+        // splitTextForBanners(); // Elimina esta línea, no es necesaria
         createTimers();
         createPlanes();
     };
@@ -581,10 +582,10 @@ function initPlanes() {
     createTimers();
     createPlanes(); // Muestra la primera frase al cargar
 
-    // Mostrar la siguiente frase cada 20 segundos, hasta el total de frases
+    // Mostrar la siguiente frase cada 30 segundos, hasta el total de frases
     intervalId = setInterval(() => {
         createPlanes();
-    }, 25000);
+    }, 30000);
 
     window.addEventListener('resize', resetPlanes);
 
@@ -755,12 +756,17 @@ function initPlanes() {
           ${item.autor ? `<span class="literario-autor">— ${item.autor}</span>` : ''}
           <div class="literario-actions">
             <button class="literario-fav-btn${item.favorito ? ' fav' : ''}" title="Favorito">&#9733;</button>
+            <button class="literario-edit-btn" title="Editar">&#9998;</button>
             <button class="literario-del-btn" title="Eliminar">&#128465;</button>
           </div>
         `;
         // Expand/collapse on click
         li.onclick = function(e) {
-          if (e.target.classList.contains('literario-fav-btn') || e.target.classList.contains('literario-del-btn')) return;
+          if (
+            e.target.classList.contains('literario-fav-btn') ||
+            e.target.classList.contains('literario-del-btn') ||
+            e.target.classList.contains('literario-edit-btn')
+          ) return;
           li.classList.toggle('expanded');
         };
         // Favorito
@@ -769,6 +775,20 @@ function initPlanes() {
           try {
             await litRef.doc(item.id).update({ favorito: !item.favorito });
           } catch (err) { alert("Error al marcar favorito."); }
+        };
+        // Editar
+        li.querySelector('.literario-edit-btn').onclick = async function(e) {
+          e.stopPropagation();
+          const nuevoTexto = prompt("Modifica el texto:", item.texto);
+          if (nuevoTexto === null) return;
+          const nuevoAutor = prompt("Modifica el autor:", item.autor || "");
+          if (nuevoAutor === null) return;
+          try {
+            await litRef.doc(item.id).update({
+              texto: nuevoTexto.trim(),
+              autor: nuevoAutor.trim()
+            });
+          } catch (err) { alert("Error al editar."); }
         };
         // Eliminar
         li.querySelector('.literario-del-btn').onclick = async function(e) {

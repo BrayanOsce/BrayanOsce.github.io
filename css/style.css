@@ -413,10 +413,10 @@ canvas#flowers-bg {
 }
 
 .container {
-    background: rgba(255,255,255,0.95);
+    background: rgba(255,255,255,0.82); /* fondo semitransparente */
     border: 3px solid #73c8a9;
-    border-radius: 20px;
-    box-shadow: 0 8px 32px 0 rgba(55, 59, 68, 0.2);
+    border-radius: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     padding: 40px 30px;
     text-align: center;
     max-width: 500px;
@@ -427,7 +427,7 @@ canvas#flowers-bg {
     position: relative;
     z-index: 1;
     /* Mueve la sección más a la izquierda en desktop */
-    margin-left: -34px;
+    margin-left: 5px;
 }
 
 h1 {
@@ -510,30 +510,24 @@ button.prev:hover, button.next:hover, button.play-pause:hover {
     box-shadow: 0 6px 20px rgba(115,200,169,0.4);
 }
 
-.dedication {
-    color: #373b44;
-    font-size: 1.1em;
-    margin-top: 20px;
-    text-shadow: 1px 1px 2px rgba(115,200,169,0.2);
-    animation: fadeInUp 1.2s;
+.flip-icon-btn {
+  background: rgba(255,255,255,0.85);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px #e1b86644;
+  transition: background 0.22s, box-shadow 0.22s, transform 0.18s;
 }
-
-.icon-playpause {
-  width: 50%;
-  height: 50%;
-  object-fit: contain;
-  display: block;
+.flip-icon-btn:hover,
+.flip-icon-btn:focus {
+  background: #f9c046;
+  box-shadow: 0 0 16px 4px #f4ae42aa, 0 4px 16px #e1b86655;
+  transform: scale(1.12) rotate(-8deg);
+  animation: escribir-pulse 0.7s;
 }
-
-@keyframes fadeInDown {
-    from { opacity: 0; transform: translateY(-30px); }
-    to { opacity: 1; transform: translateY(0); }
+@keyframes escribir-pulse {
+  0% { box-shadow: 0 0 0 0 #f4ae42aa; }
+  50% { box-shadow: 0 0 16px 8px #f4ae42aa; }
+  100% { box-shadow: 0 0 0 0 #f4ae42aa; }
 }
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
 /* ============================= */
 /* === ESTILOS SOLO PARA CELULAR (iPhone 11, Redmi Note 13, etc.) === */
 /* Agrega o ajusta aquí todo lo que solo debe afectar a móviles */
@@ -712,7 +706,61 @@ button.prev:hover, button.next:hover, button.play-pause:hover {
     transform: rotateY(180deg) !important;
   }
 
+  #literario-panel.minimized {
+    max-height: 48px !important;
+    overflow: hidden !important;
+    padding: 0 8px !important;
+    margin: 8px auto !important;
+    transition: max-height 0.3s;
+  }
+  #literario-panel.minimized h2,
+  #literario-panel.minimized form,
+  #literario-panel.minimized ul {
+    display: none !important;
+  }
+  .literario-toggle-btn {
+    display: block !important;
+    width: 100vw !important;
+    min-width: 100vw !important;
+    max-width: 100vw !important;
+    left: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    border-radius: 0 !important;
+    background: linear-gradient(135deg, #ffe6e6 80%, #fffbe9 100%) !important;
+    color: #bd5532 !important;
+    font-size: 1.08em !important;
+    font-family: 'Dancing Script', cursive !important;
+    padding: 12px 0 !important;
+    border: none !important;
+    box-shadow: 0 2px 8px #e1b86633 !important;
+    cursor: pointer !important;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s !important;
+  }
+  .literario-toggle-btn:hover,
+  .literario-toggle-btn:focus {
+    background: linear-gradient(135deg, #e1b866 80%, #ffe6e6 100%) !important;
+    color: #fffbe9 !important;
+    box-shadow: 0 4px 16px #e1b86655 !important;
+  }
+  .container,
+  .literario-panel,
+  .lista-deseos-panel,
+  .carousel,
+  .dedication,
+  .spotify-player {
+    width: 100vw !important;
+    min-width: 100vw !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    border-radius: 0 !important;
+  }
 }
+/* ...existing code... */
 /* === FIN ESTILOS SOLO PARA CELULAR === */
 /* ============================= */
 /* === Lista de deseos panel (unificado de lista-deseos-panel.css) === */
@@ -801,7 +849,7 @@ button.prev:hover, button.next:hover, button.play-pause:hover {
   color: #e1b866;
 }
 .lista-deseos-panel {
-  background: linear-gradient(135deg, #fffbe9 80%, #ffe6e6 100%);
+  background: linear-gradient(135deg, rgba(255,251,233,0.82) 80%, rgba(255,230,230,0.82) 100%);
   border: 2.5px solid #e1b866;
   border-radius: 22px;
   box-shadow: 0 8px 32px 0 #e1b86633, 0 2px 8px #bd553244;
@@ -871,7 +919,7 @@ button.prev:hover, button.next:hover, button.play-pause:hover {
   box-shadow: 0 2px 8px #e1b86644;
 }
 .deseo-btn {
-  background: linear-gradient(90deg, #e1b866 80%, #ffb6b6 100%);
+  background: #e1b866;
   color: #fffbe9;
   border: none;
   border-radius: 10px;
@@ -884,7 +932,7 @@ button.prev:hover, button.next:hover, button.play-pause:hover {
   letter-spacing: 0.5px;
 }
 .deseo-btn:hover {
-  background: linear-gradient(90deg, #bd5532 80%, #ffb6b6 100%);
+  background: #bd5532;
   box-shadow: 0 4px 16px #e1b86655;
 }
 
@@ -1014,16 +1062,16 @@ body.night-mode .deseo-text {
   100% { transform: translateY(0) scale(1) rotate(-8deg);}
 }
 .literario-panel {
-  background: linear-gradient(135deg, #fffbe9 80%, #ffe6e6 100%);
+  background: linear-gradient(135deg, rgba(255,251,233,0.82) 80%, rgba(255,230,230,0.82) 100%);
   border: 2.5px solid #e1b866;
   font-size: medium;
   border-radius: 22px;
   box-shadow: 0 8px 32px 0 #e1b86633, 0 2px 8px #bd553244;
   padding: 28px 18px 18px 18px;
-  max-width: 320px;
-  min-width: 180px;
+  max-width: 380px;
+  min-width: 120px;
   width: 100%;
-  margin: 32px 8px 32px 72px;
+  margin: 32px 48px 32px 50px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1031,21 +1079,34 @@ body.night-mode .deseo-text {
   font-family: 'Dancing Script', 'Roboto', cursive, sans-serif;
   position: relative;
   overflow: visible;
-  max-height: 70vh;
-  /* Altura máxima igual que .lista-deseos-panel */
+  max-height: 71vh; /* Modifica este valor para cambiar la altura máxima */
   overflow-y: auto;
+  overflow-x: hidden;
+  min-width: 0;
 }
-.literario-form {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
-  width: 100%;
-  justify-content: center;
-  flex-wrap: wrap;
-  box-sizing: border-box;
-  /* Mejora: evita overflow y asegura que los hijos no se salgan */
-  max-width: 98%;
-  align-items: flex-start;
+.literario-panel h2 {
+  font-family: 'Dancing Script', cursive;
+  font-size: 1.8em; /* Cambia este valor para el modo día */
+  margin-bottom: 20px;
+  margin-top: 10px;
+  color: #e1b866;
+  text-align: center;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px #ffe6c1;
+  position: relative;
+}
+.literario-panel h2::after {
+  content: '';
+  position: absolute;
+  right: -32px;
+  top: 0;
+  width: 1.3em;
+  height: 1.3em;
+  background-image: url('css/mushroom6.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.85;
+  display: inline-block;
 }
 #literario-texto {
   flex: 2 1 0;
@@ -1054,10 +1115,10 @@ body.night-mode .deseo-text {
   padding: 10px 14px;
   border-radius: 12px;
   border: 2px solid #e1b866;
-  background: linear-gradient(90deg, #fffbe9 80%, #ffe6e6 100%);
+  background: #fffbe9;
   color: #bd5532;
-  font-size: 1.08em;
-  font-family: 'Dancing Script', 'Roboto', cursive, sans-serif;
+  font-size: 1em;
+  font-family: 'Roboto', Arial, sans-serif;
   box-shadow: 0 2px 8px #e1b86633;
   transition: border 0.22s, box-shadow 0.22s, background 0.22s;
   outline: none;
@@ -1065,25 +1126,33 @@ body.night-mode .deseo-text {
   margin-right: 0;
   margin-left: 0;
   border-width: 2px;
-  /* Mejora: no se sale del panel */
+  width: 200px !important;
+  min-width: 140px !important;
+  max-width: 240px !important;
 }
 #literario-texto:focus {
   border: 2px solid #bd5532;
   background: #fffbe9;
   box-shadow: 0 4px 16px #e1b86655;
 }
+#literario-texto::placeholder {
+  font-family: 'Roboto', Arial, sans-serif;
+  font-size: 1em;
+  color: #bd5532;
+  opacity: 0.7;
+}
 #literario-autor {
   flex: 0 0 110px;
-  width: 110px;
-  min-width: 60px;
-  max-width: 120px;
+  width: 80px !important;
+  min-width: 60px !important;
+  max-width: 90px !important;
   padding: 10px 10px;
   border-radius: 12px;
   border: 2px solid #e1b866;
-  background: linear-gradient(90deg, #ffe6e6 80%, #fffbe9 100%);
+  background: #fcf6ee;
   color: #bd5532;
   font-size: 1em;
-  font-family: 'Roboto', 'Dancing Script', cursive, sans-serif;
+  font-family: 'Roboto', Arial, sans-serif;
   box-shadow: 0 2px 8px #e1b86622;
   transition: border 0.22s, box-shadow 0.22s, background 0.22s;
   outline: none;
@@ -1104,7 +1173,7 @@ body.night-mode .deseo-text {
   padding-left: 0;
   padding-right: 0;
   white-space: nowrap;
-  background: linear-gradient(90deg, #e1b866 80%, #ffb6b6 100%);
+  background: #e1b866;
   color: #fffbe9;
   border: none;
   border-radius: 10px;
@@ -1120,7 +1189,7 @@ body.night-mode .deseo-text {
   outline: none;
 }
 .literario-btn:hover, .literario-btn:focus {
-  background: linear-gradient(90deg, #bd5532 80%, #ffb6b6 100%);
+  background: #bd5532;
   box-shadow: 0 4px 16px #e1b86655;
   transform: scale(1.09);
   outline: none;
@@ -1135,12 +1204,12 @@ body.night-mode .deseo-text {
   overflow-y: auto;
 }
 .literario-item {
-  background: linear-gradient(90deg, #fffbe9 80%, #ffe6e6 100%);
+  background: #fffbe9;
   border-radius: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   box-shadow: 0 1px 4px #e1b86622;
   padding: 12px 16px;
-  font-size: 1.08em;
+  font-size: 1.13em;
   color: #bd5532;
   cursor: pointer;
   transition: box-shadow 0.2s, background 0.2s, max-height 0.3s, white-space 0.3s;
@@ -1150,6 +1219,8 @@ body.night-mode .deseo-text {
   max-height: none;
   overflow: visible;
   /* Elimina cualquier restricción de altura y permite mostrar todo el texto */
+  border: 2.5px solid #e1b866;
+  margin-top: 8px;    /* antes 18px */
 }
 .literario-item.expanded {
   background: #fffbe9;
@@ -1159,17 +1230,139 @@ body.night-mode .deseo-text {
   white-space: pre-line;
   overflow-y: auto;
   /* Al hacer click, se expande y muestra todo el texto */
+  margin-top: 8px;    /* igual que .literario-item */
 }
 .literario-item {
   font-family: 'Roboto', Arial, sans-serif;
-  font-size: 1.22em;
+  font-size: 1.13em;
 }
 body.night-mode .literario-panel h2 {
   color: #fffbe9 !important;
-  font-size: 2.1em;
+  font-size: 2.1em; /* Cambia este valor para el modo noche */
   text-shadow: 0 2px 8px #2a3557;
 }
 
 #night-mode-btn {
   right: 20px !important;
+}
+.literario-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.literario-fav-btn {
+  background: #ffe6e6;
+  color: #e1b866;
+  border: none;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  font-size: 1em;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #e1b86633;
+  transition: background 0.18s, color 0.18s, transform 0.18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+}
+.literario-fav-btn:hover,
+.literario-fav-btn:focus {
+  background: #e1b866;
+  color: #bd5532;
+  transform: scale(1.12);
+}
+.literario-fav-btn.fav {
+  background: #e2b357;
+  color: #bd5532;
+  box-shadow: 0 4px 16px #e1b86655;
+  font-weight: bold;
+  transform: scale(1.13);
+}
+
+.literario-del-btn {
+  background: #c68f73;
+  color: #fffbe9;
+  border: none;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  font-size: 1em;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #e1b86633;
+  transition: background 0.18s, color 0.18s, transform 0.18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+}
+.literario-del-btn:hover,
+.literario-del-btn:focus {
+  background: #d32f2f;
+  color: #fffbe9;
+  transform: scale(1.12);
+}
+
+.literario-edit-btn {
+  background: #ffe6e6;
+  color: #e1b866;
+  border: none;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  font-size: 1em;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #e1b86633;
+  transition: background 0.18s, color 0.18s, transform 0.18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  margin-left: 2px;
+}
+.literario-edit-btn:hover,
+.literario-edit-btn:focus {
+  background: #e1b866;
+  color: #bd5532;
+  transform: scale(1.12);
+}
+
+#literario-texto,
+#literario-autor,
+.literario-btn {
+  height: 40px;
+  font-size: 1em;
+  box-sizing: border-box;
+  margin-bottom: 15px; /* Añade margen inferior a cada campo y botón */
+}
+.flip-btn#toFrontBtn {
+  background: #e1b866;
+  color: #fffbe9;
+  border: none;
+  border-radius: 14px;
+  font-family: 'Dancing Script', cursive;
+  font-size: 1.08em;
+  box-shadow: 0 2px 8px #e1b86644;
+  transition: background 0.22s, box-shadow 0.22s, transform 0.18s;
+  position: relative;
+  overflow: hidden;
+}
+.flip-btn#toFrontBtn:hover,
+.flip-btn#toFrontBtn:focus {
+  background: #f4ae42;
+  color: #fffbe9;
+  box-shadow: 0 0 16px 4px #f9c04688, 0 4px 16px #e1b86655;
+  transform: scale(1.08);
+  animation: volver-pulse 0.7s;
+}
+@keyframes volver-pulse {
+  0% { box-shadow: 0 0 0 0 #f9c04688; }
+  50% { box-shadow: 0 0 16px 8px #f9c04688; }
+  100% { box-shadow: 0 0 0 0 #f9c04688; }
+}
+.literario-btn-icon {
+  display: none;
 }
