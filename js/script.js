@@ -1,3 +1,34 @@
+// --- Protección por contraseña para GitHub Pages ---
+document.addEventListener('DOMContentLoaded', function() {
+  var modal = document.getElementById('password-modal');
+  var main = document.getElementById('main-content');
+  var form = document.getElementById('password-form');
+  var input = document.getElementById('password-input');
+  var error = document.getElementById('password-error');
+  // Cambia esta contraseña por la que quieras usar:
+  var PASSWORD = 'aniversario';
+
+  if (!modal || !main || !form || !input) return;
+
+  form.onsubmit = function(e) {
+    e.preventDefault();
+    if (input.value === PASSWORD) {
+      modal.style.display = 'none';
+      main.style.display = '';
+      input.value = '';
+      error.style.display = 'none';
+    } else {
+      error.style.display = 'block';
+      input.value = '';
+      input.focus();
+    }
+  };
+  // Opcional: permite Enter para enviar
+  input.onkeydown = function(e) {
+    if (e.key === 'Enter') form.onsubmit(e);
+  };
+});
+
 // Carrusel de fotos simple sin Firebase
 // Carrusel de fotos dinámico desde .txt de Google Drive
 
