@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', function() {
   var form = document.getElementById('password-form');
   var input = document.getElementById('password-input');
   var error = document.getElementById('password-error');
-  // Cambia esta contraseña por la que quieras usar:
   var PASSWORD = 'aniversario';
 
   if (!modal || !main || !form || !input) return;
@@ -17,17 +16,176 @@ document.addEventListener('DOMContentLoaded', function() {
       main.style.display = '';
       input.value = '';
       error.style.display = 'none';
+      // Inicializa el carrusel y listeners solo cuando el contenido es visible
+      inicializarCarrusel();
     } else {
       error.style.display = 'block';
       input.value = '';
       input.focus();
     }
   };
-  // Opcional: permite Enter para enviar
   input.onkeydown = function(e) {
     if (e.key === 'Enter') form.onsubmit(e);
   };
 });
+
+function inicializarCarrusel() {
+  // Variables y listeners del carrusel
+  const prevBtn = document.querySelector('.prev');
+  const nextBtn = document.querySelector('.next');
+  const playPauseBtn = document.querySelector('.play-pause');
+  const playPauseIcon = document.getElementById('playPauseIcon');
+  const carousel = document.querySelector('.carousel-images');
+  let current = 0;
+  let shuffledOrder = [];
+  let currentShuffleIndex = 0;
+  let autoplayInterval;
+  let isPlaying = false;
+
+  // Función para barajar un array (algoritmo Fisher-Yates)
+  function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }
+
+  // Mensajes cacheados localmente para evitar recargas innecesarias
+  const tempMessages = {};
+
+  function renderCarousel() {
+    if (urls.length === 0) {
+      carousel.innerHTML = '<div class="no-images-msg">No hay imágenes para mostrar.</div>';
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+      return;
+    }
+    const idx = current;
+    const url = urls[idx];
+    const photoKey = anifotos[idx];
+    let savedMsg = tempMessages[photoKey] || '';
+    carousel.innerHTML = `
+      <div class="carousel-flip" id="flipCard">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <img src="${url}" alt="Foto ${idx+1}" class="active">
+            <button class="flip-btn flip-icon-btn" id="toBackBtn" title="Escribir mensaje" style="position:absolute;bottom:12px;right:12px;z-index:3;padding:6px 8px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.85);border-radius:50%;box-shadow:0 2px 8px #e1b86644;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#bd5532" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17.25V21h3.75l11.06-11.06a2.12 2.12 0 0 0-3-3L3 17.25z"></path><path d="M14.5 6.5l3 3"></path></svg>
+            </button>
+          </div>
+          <div class="flip-card-back">
+            <textarea id="flipMsg" placeholder="Escribe aquí...">${savedMsg}</textarea>
+            <button class="flip-btn" id="toFrontBtn">Volver</button>
+          </div>
+        </div>
+      </div>
+    `;
+    // Flip logic
+    const flipCard = document.getElementById('flipCard');
+    const toBackBtn = document.getElementById('toBackBtn');
+    const toFrontBtn = document.getElementById('toFrontBtn');
+    const flipMsg = document.getElementById('flipMsg');
+    if (toBackBtn) {
+      toBackBtn.onclick = () => {
+        flipCard.classList.add('flipped');
+      };
+    }
+    if (toFrontBtn) {
+      toFrontBtn.onclick = () => {
+        flipCard.classList.remove('flipped');
+      };
+    }
+    if (flipMsg) {
+      // Cargar mensaje desde Firestore si no está en cache
+      if (!tempMessages[photoKey]) {
+        db.collection('flipMessages').doc(photoKey).get().then(doc => {
+          if (doc.exists) {
+            tempMessages[photoKey] = doc.data().message;
+            flipMsg.value = tempMessages[photoKey];
+          }
+        });
+      }
+      flipMsg.addEventListener('input', () => {
+        tempMessages[photoKey] = flipMsg.value;
+        db.collection('flipMessages').doc(photoKey).set({ message: flipMsg.value });
+      });
+    }
+  }
+  window.renderCarousel = renderCarousel;
+
+  // Crear orden aleatorio inicial
+  shuffledOrder = shuffleArray(Array.from({length: urls.length}, (_, i) => i));
+  currentShuffleIndex = 0;
+  current = shuffledOrder[currentShuffleIndex];
+  renderCarousel();
+
+  if (prevBtn) {
+    prevBtn.onclick = () => {
+      if (urls.length === 0) return;
+      currentShuffleIndex = (currentShuffleIndex - 1 + shuffledOrder.length) % shuffledOrder.length;
+      current = shuffledOrder[currentShuffleIndex];
+      renderCarousel();
+    };
+  }
+  if (nextBtn) {
+    nextBtn.onclick = () => {
+      if (urls.length === 0) return;
+      currentShuffleIndex = (currentShuffleIndex + 1) % shuffledOrder.length;
+      current = shuffledOrder[currentShuffleIndex];
+      renderCarousel();
+    };
+  }
+  if (playPauseBtn) {
+    playPauseBtn.onclick = function(e) {
+      if (e.type === 'click' && (e.button === 0 || e.which === 1)) {
+        toggleAutoplay();
+      }
+    };
+  }
+
+  function nextImage() {
+    if (urls.length === 0) return;
+    currentShuffleIndex = (currentShuffleIndex + 1) % shuffledOrder.length;
+    if (currentShuffleIndex === 0) {
+      shuffledOrder = shuffleArray(Array.from({length: urls.length}, (_, i) => i));
+    }
+    current = shuffledOrder[currentShuffleIndex];
+    renderCarousel();
+  }
+
+  function startAutoplay() {
+    if (isPlaying) return;
+    isPlaying = true;
+    if (playPauseIcon) {
+      playPauseIcon.src = 'css/pause.png';
+      playPauseIcon.className = 'icon-pause';
+    }
+    autoplayInterval = setInterval(() => {
+      nextImage();
+      renderCarousel();
+    }, 10000);
+  }
+
+  function stopAutoplay() {
+    if (!isPlaying) return;
+    isPlaying = false;
+    if (playPauseIcon) {
+      playPauseIcon.src = 'css/play.png';
+      playPauseIcon.className = 'icon-play';
+    }
+    clearInterval(autoplayInterval);
+  }
+
+  function toggleAutoplay() {
+    if (isPlaying) {
+      stopAutoplay();
+    } else {
+      startAutoplay();
+    }
+  }
+}
 
 // Carrusel de fotos simple sin Firebase
 // Carrusel de fotos dinámico desde .txt de Google Drive
@@ -78,7 +236,7 @@ function startAutoplay() {
     autoplayInterval = setInterval(() => {
       nextImage();
       renderCarousel();
-    }, 30000); // Cambia cada 30 segundos
+    }, 10000); // Cambia cada 10 segundos
 }
 
 function stopAutoplay() {
