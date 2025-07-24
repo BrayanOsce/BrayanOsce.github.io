@@ -44,9 +44,11 @@
   backface-visibility: hidden;
   border-radius: 18px;
   overflow: hidden;
+  -webkit-backface-visibility: hidden; /* Safari/iOS fix */
 }
 .flip-card-front {
   z-index: 2;
+  transform: rotateY(0deg);
 }
 .flip-card-back {
   background: #fffbe6;
@@ -59,6 +61,8 @@
   padding: 24px 18px 18px 18px;
   font-family: 'Dancing Script', cursive;
   font-size: 1.2em;
+  z-index: 1;
+  -webkit-transform: rotateY(180deg); /* Safari/iOS fix */
 }
 .flip-card-back textarea {
   display: block;
@@ -252,7 +256,7 @@ button.play-pause:hover {
 }
 /* =============================================================== */
 body {
-    background: #B93513;
+    background: #FF6A00;
     font-family: 'Roboto', Arial, sans-serif;
     margin: 0;
     padding: 0;
@@ -536,7 +540,7 @@ button.prev:hover, button.next:hover, button.play-pause:hover {
     margin-top: 36px !important;
   }
   body {
-    background: #B93513;
+    background: #720026;
     align-items: flex-start;
     justify-content: flex-start;
     min-height: 100vh;
@@ -653,29 +657,27 @@ button.prev:hover, button.next:hover, button.play-pause:hover {
     /* Puedes ajustar estos valores para más o menos desplazamiento */
   }
   .flip-card-back textarea {
-    min-height: 240px;
-    max-height: 360px;
-    font-size: 1em;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    margin-top: 0 !important;
-    width: 90% !important;
-    max-width: 320px;
-    min-width: 120px;
+    min-height: 240px !important;
+    max-height: 360px !important;
+    font-size: 1em !important;
+    margin: 0 !important;
+    width: 85% !important;
+    max-width: 300px !important;
+    min-width: 200px !important;
     display: block !important;
     box-sizing: border-box !important;
-  }
-  /* Asegurar que el reverso funcione en móvil */
-  .flip-card-back {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 20px !important;
+    border: 2px solid #e1b866 !important;
     background: #fffbe6 !important;
     color: #bd5532 !important;
+    font-family: 'Dancing Script', cursive !important;
+    padding: 10px !important;
+    border-radius: 12px !important;
+    resize: vertical !important;
+    outline: none !important;
+    box-shadow: 0 2px 8px #e1b86644 !important;
   }
-  /* Botón volver en móvil */
+  
+  /* Botón volver en móvil - asegurar que funcione */
   .flip-card-back .flip-btn {
     margin-top: 15px !important;
     background: #e1b866 !important;
@@ -687,7 +689,10 @@ button.prev:hover, button.next:hover, button.play-pause:hover {
     cursor: pointer !important;
     display: block !important;
     box-shadow: 0 2px 8px #e1b86644 !important;
+    font-family: 'Dancing Script', cursive !important;
+    touch-action: manipulation !important; /* Mejora la respuesta táctil */
   }
+  
   /* Centrado y ajuste de .menu-content en móvil */
   .menu-content {
     width: 85vw !important;
@@ -717,21 +722,45 @@ button.prev:hover, button.next:hover, button.play-pause:hover {
   .spotify-player {
     margin-top: 10px;
   }
-  /* Flip-card: solo el reverso debe rotar, no verse como espejo */
+  
+  /* Asegurar que el carrusel funcione correctamente en móviles reales */
+  .carousel-flip {
+    perspective: 1200px !important;
+    -webkit-perspective: 1200px !important; /* Safari/iOS fix */
+  }
+  
   .flip-card-inner {
     transform-style: preserve-3d !important;
+    -webkit-transform-style: preserve-3d !important; /* Safari/iOS fix */
     transition: transform 0.7s cubic-bezier(.4,0,.2,1) !important;
+    -webkit-transition: -webkit-transform 0.7s cubic-bezier(.4,0,.2,1) !important;
   }
+  
   .flipped .flip-card-inner {
     transform: rotateY(180deg) !important;
+    -webkit-transform: rotateY(180deg) !important; /* Safari/iOS fix */
   }
+  
+  .flip-card-front, .flip-card-back {
+    backface-visibility: hidden !important;
+    -webkit-backface-visibility: hidden !important; /* Safari/iOS fix */
+  }
+  
   .flip-card-front {
-    backface-visibility: hidden !important;
-    transform: none !important; /* Evita que la imagen se invierta */
+    transform: rotateY(0deg) !important;
+    -webkit-transform: rotateY(0deg) !important;
   }
+  
   .flip-card-back {
-    backface-visibility: hidden !important;
     transform: rotateY(180deg) !important;
+    -webkit-transform: rotateY(180deg) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #fffbe6 !important;
+    color: #bd5532 !important;
+    padding: 20px !important;
   }
 
   #literario-panel.minimized {
