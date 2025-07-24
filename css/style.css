@@ -256,7 +256,7 @@ button.play-pause:hover {
 }
 /* =============================================================== */
 body {
-    background: #FF6A00;
+    background: #610D08;
     font-family: 'Roboto', Arial, sans-serif;
     margin: 0;
     padding: 0;
@@ -418,7 +418,7 @@ canvas#flowers-bg {
 
 .container {
     background: rgba(255,255,255,0.82); /* fondo semitransparente */
-    border: 3px solid #73c8a9;
+    border: 3px solid #FF6A00;
     border-radius: 24px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     padding: 40px 30px;
@@ -491,7 +491,7 @@ h1 {
 /* Botones de pausa, play y flechas */
 button.prev, button.next, button.play-pause {
     background: linear-gradient(135deg, #e1b866, #dee1b6);
-    border: 2px solid #73c8a9;
+    border: 2px solid #FF6A00;
     border-radius: 15px;
     width: 48px;
     height: 48px;
