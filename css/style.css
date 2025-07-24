@@ -1505,3 +1505,48 @@ body:has(#password-modal[style*="display: flex"]) {
     padding: 7px 18px;
   }
 }
+
+/* === MEDIA QUERY PARA PANTALLAS PEQUEÑAS (LAPTOPS ACER, ETC.) === */
+@media screen and (max-width: 1366px) and (min-width: 769px) {
+  /* Aumentar espaciado del panel literario */
+  .literario-panel {
+    margin: 20px 30px 20px 35px !important;
+    max-width: 320px !important;
+    padding: 20px 15px 15px 15px !important;
+  }
+  
+  /* Ajustar posición del panel de deseos */
+  .lista-deseos-panel {
+    right: 35px !important; /* Reducir margen derecho */
+    max-width: 300px !important;
+    padding: 25px 20px 20px 20px !important;
+  }
+  
+  /* Ajustar carrusel para dar más espacio */
+  .carousel {
+    margin-bottom: 30px !important;
+  }
+  
+  .carousel-images {
+    width: 280px !important;
+    height: 280px !important;
+  }
+  
+  /* Reducir tamaño del contenedor principal */
+  .container {
+    padding: 15px !important;
+    max-width: 900px !important;
+  }
+  
+  /* Ajustar título principal */
+  h1 {
+    font-size: 2.2em !important;
+    margin-bottom: 25px !important;
+  }
+  
+  /* Reducir espaciado de la dedicatoria */
+  .dedication {
+    margin: 20px 0 !important;
+    font-size: 1.1em !important;
+  }
+}
