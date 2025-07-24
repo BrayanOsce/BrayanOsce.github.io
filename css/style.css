@@ -657,13 +657,13 @@ button.prev:hover, button.next:hover, button.play-pause:hover {
     /* Puedes ajustar estos valores para más o menos desplazamiento */
   }
   .flip-card-back textarea {
-    min-height: 240px !important;
-    max-height: 360px !important;
+    min-height: 200px !important;
+    max-height: 280px !important;
     font-size: 1em !important;
-    margin: 0 !important;
-    width: 85% !important;
-    max-width: 300px !important;
-    min-width: 200px !important;
+    margin: 0 auto 0 auto !important; /* Movido hacia la derecha */
+    width: 70% !important; /* Más pequeño que la foto */
+    max-width: 250px !important;
+    min-width: 180px !important;
     display: block !important;
     box-sizing: border-box !important;
     border: 2px solid #e1b866 !important;
