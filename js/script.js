@@ -236,7 +236,7 @@ function startAutoplay() {
     autoplayInterval = setInterval(() => {
       nextImage();
       renderCarousel();
-    }, 10000); // Cambia cada 10 segundos
+    }, 8000); // Cambia cada 8 segundos
 }
 
 function stopAutoplay() {
