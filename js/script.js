@@ -1,32 +1,171 @@
-// --- Protección por contraseña para GitHub Pages ---
+// --- Firebase Authentication para GitHub Pages ---
+const firebaseConfig = {
+  apiKey: "AIzaSyA_IcjbhzZxcf78d4FGca2SiLcZmU-8NGU",
+  authDomain: "aniversario-3a910.firebaseapp.com",
+  projectId: "aniversario-3a910",
+  storageBucket: "aniversario-3a910.appspot.com",
+  messagingSenderId: "901698875349",
+  appId: "1:901698875349:web:fdca923863aaeea58c975c",
+  measurementId: "G-CEEDYF2JJ5"
+};
+
+// Inicializar Firebase
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// Variables globales para autenticación
+let currentUser = null;
+
 document.addEventListener('DOMContentLoaded', function() {
-  var modal = document.getElementById('password-modal');
-  var main = document.getElementById('main-content');
-  var form = document.getElementById('password-form');
-  var input = document.getElementById('password-input');
-  var error = document.getElementById('password-error');
-  var PASSWORD = 'aniversario';
+  const modal = document.getElementById('password-modal');
+  const main = document.getElementById('main-content');
+  const authForm = document.getElementById('auth-form');
+  const emailInput = document.getElementById('email-input');
+  const passwordInput = document.getElementById('password-input');
+  const loginBtn = document.getElementById('login-btn');
+  const registerBtn = document.getElementById('register-btn');
+  const authError = document.getElementById('auth-error');
+  const authLoading = document.getElementById('auth-loading');
 
-  if (!modal || !main || !form || !input) return;
+  if (!modal || !main || !authForm) return;
 
-  form.onsubmit = function(e) {
+  // Función para mostrar error
+  function showError(message) {
+    authError.textContent = message;
+    authError.style.display = 'block';
+    authLoading.style.display = 'none';
+  }
+
+  // Función para mostrar loading
+  function showLoading() {
+    authError.style.display = 'none';
+    authLoading.style.display = 'block';
+  }
+
+  // Función para ocultar mensajes
+  function hideMessages() {
+    authError.style.display = 'none';
+    authLoading.style.display = 'none';
+  }
+
+  // Función para mostrar contenido principal
+  function showMainContent(user) {
+    currentUser = user;
+    modal.style.display = 'none';
+    main.style.display = '';
+    
+    // Inicializar todos los componentes
+    inicializarCarrusel();
+    setupDeseos();
+    setupLiterario();
+    
+    console.log('Usuario autenticado:', user.email);
+  }
+
+  // Login con email y contraseña
+  authForm.addEventListener('submit', async function(e) {
     e.preventDefault();
-    if (input.value === PASSWORD) {
-      modal.style.display = 'none';
-      main.style.display = '';
-      input.value = '';
-      error.style.display = 'none';
-      // Inicializa el carrusel y listeners solo cuando el contenido es visible
-      inicializarCarrusel();
-    } else {
-      error.style.display = 'block';
-      input.value = '';
-      input.focus();
+    
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+    
+    if (!email || !password) {
+      showError('Por favor completa todos los campos');
+      return;
     }
-  };
-  input.onkeydown = function(e) {
-    if (e.key === 'Enter') form.onsubmit(e);
-  };
+
+    showLoading();
+
+    try {
+      const userCredential = await auth.signInWithEmailAndPassword(email, password);
+      showMainContent(userCredential.user);
+    } catch (error) {
+      console.error('Error al iniciar sesión:', error);
+      let errorMessage = 'Error al iniciar sesión';
+      
+      switch (error.code) {
+        case 'auth/user-not-found':
+          errorMessage = 'No existe una cuenta con este correo';
+          break;
+        case 'auth/wrong-password':
+          errorMessage = 'Contraseña incorrecta';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'Correo electrónico inválido';
+          break;
+        case 'auth/too-many-requests':
+          errorMessage = 'Demasiados intentos. Intenta más tarde';
+          break;
+        default:
+          errorMessage = error.message;
+      }
+      
+      showError(errorMessage);
+    }
+  });
+
+  // Registro de nueva cuenta
+  registerBtn.addEventListener('click', async function() {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+    
+    if (!email || !password) {
+      showError('Por favor completa todos los campos para registrarte');
+      return;
+    }
+
+    if (password.length < 6) {
+      showError('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    showLoading();
+
+    try {
+      const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+      showMainContent(userCredential.user);
+    } catch (error) {
+      console.error('Error al registrar:', error);
+      let errorMessage = 'Error al crear la cuenta';
+      
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          errorMessage = 'Ya existe una cuenta con este correo';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'Correo electrónico inválido';
+          break;
+        case 'auth/weak-password':
+          errorMessage = 'La contraseña es muy débil';
+          break;
+        default:
+          errorMessage = error.message;
+      }
+      
+      showError(errorMessage);
+    }
+  });
+
+  // Escuchar cambios en el estado de autenticación
+  auth.onAuthStateChanged(function(user) {
+    if (user) {
+      // Usuario está autenticado
+      showMainContent(user);
+    } else {
+      // Usuario no está autenticado
+      currentUser = null;
+      modal.style.display = 'flex';
+      main.style.display = 'none';
+      hideMessages();
+    }
+  });
+
+  // Limpiar mensajes al escribir
+  emailInput.addEventListener('input', hideMessages);
+  passwordInput.addEventListener('input', hideMessages);
 });
 
 function inicializarCarrusel() {
@@ -361,21 +500,7 @@ const anifotos = [
 
 const urls = anifotos.map(filename => `anifotos/${filename}`);
 // --- INTEGRACIÓN FIREBASE FIRESTORE PARA MENSAJES PERSISTENTES ---
-// Configuración Firebase (rellena con tus credenciales reales)
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyA_IcjbhzZxcf78d4FGca2SiLcZmU-8NGU",
-  authDomain: "aniversario-3a910.firebaseapp.com",
-  projectId: "aniversario-3a910",
-  storageBucket: "aniversario-3a910.appspot.com",
-  messagingSenderId: "901698875349",
-  appId: "1:901698875349:web:fdca923863aaeea58c975c",
-  measurementId: "G-CEEDYF2JJ5"
-};
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-const db = firebase.firestore();
+// Firebase ya está configurado arriba, usando las mismas variables globales
 // Mensajes cacheados localmente para evitar recargas innecesarias
 const tempMessages = {};
 function renderCarousel() {
@@ -787,38 +912,29 @@ function initPlanes() {
 }
 
 // === LISTA DE DESEOS CON FIREBASE FIRESTORE ===
-(function () {
-  // Espera a que el DOM esté listo
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", setupDeseos);
-  } else {
-    setupDeseos();
+function setupDeseos() {
+  // Verifica duplicidad de IDs
+  const deseosForm = document.getElementById('deseos-form');
+  const deseosInput = document.getElementById('deseo-input');
+  const deseosLista = document.getElementById('deseos-lista');
+  if (!deseosForm || !deseosInput || !deseosLista) {
+    console.error('No se encontraron los elementos de la lista de deseos. Verifica los IDs en el HTML.');
+    return;
   }
 
-  function setupDeseos() {
-    // Verifica duplicidad de IDs
-    const deseosForm = document.getElementById('deseos-form');
-    const deseosInput = document.getElementById('deseo-input');
-    const deseosLista = document.getElementById('deseos-lista');
-    if (!deseosForm || !deseosInput || !deseosLista) {
-      console.error('No se encontraron los elementos de la lista de deseos. Verifica los IDs en el HTML.');
-      return;
+  // Verifica que solo haya un elemento con cada ID
+  ['deseos-form', 'deseo-input', 'deseos-lista'].forEach(id => {
+    if (document.querySelectorAll(`#${id}`).length > 1) {
+      console.error(`Duplicidad de ID: ${id}. Solo debe haber uno en el HTML.`);
     }
+  });
 
-    // Verifica que solo haya un elemento con cada ID
-    ['deseos-form', 'deseo-input', 'deseos-lista'].forEach(id => {
-      if (document.querySelectorAll(`#${id}`).length > 1) {
-        console.error(`Duplicidad de ID: ${id}. Solo debe haber uno en el HTML.`);
-      }
-    });
-
-    // Verifica inicialización de Firebase
-    if (!window.firebase || !window.firebase.firestore) {
-      console.error('Firebase no está inicializado correctamente.');
-      return;
-    }
-    const db = window.firebase.firestore();
-    const deseosRef = db.collection('deseos');
+  // Verifica inicialización de Firebase
+  if (!window.firebase || !window.firebase.firestore) {
+    console.error('Firebase no está inicializado correctamente.');
+    return;
+  }
+  const deseosRef = db.collection('deseos');
 
     function renderDeseosFirebase(deseos) {
       deseosLista.innerHTML = '';
@@ -908,128 +1024,119 @@ function initPlanes() {
       }
     });
   }
-})();
 
 // === PANEL LITERARIO SINCRONIZADO FIRESTORE ===
-(function () {
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", setupLiterario);
-  } else {
-    setupLiterario();
-  }
+function setupLiterario() {
+  const form = document.getElementById('literario-form');
+  const textoInput = document.getElementById('literario-texto');
+  const autorInput = document.getElementById('literario-autor');
+  const lista = document.getElementById('literario-lista');
+  if (!form || !textoInput || !autorInput || !lista) return;
 
-  function setupLiterario() {
-    const form = document.getElementById('literario-form');
-    const textoInput = document.getElementById('literario-texto');
-    const autorInput = document.getElementById('literario-autor');
-    const lista = document.getElementById('literario-lista');
-    if (!form || !textoInput || !autorInput || !lista) return;
+  // Firestore
+  if (!window.firebase || !window.firebase.firestore) return;
+  const db = window.firebase.firestore();
+  const litRef = db.collection('literario');
 
-    // Firestore
-    if (!window.firebase || !window.firebase.firestore) return;
-    const db = window.firebase.firestore();
-    const litRef = db.collection('literario');
-
-    // Render literario items
-    function renderLiterario(items) {
-      lista.innerHTML = '';
-      if (items.length === 0) {
-        lista.innerHTML = '<li class="literario-item" style="opacity:0.7;">(Sin textos aún)</li>';
-        return;
-      }
-      items.forEach(item => {
-        const li = document.createElement('li');
-        li.className = 'literario-item';
-        li.innerHTML = `
-          <span class="literario-texto">${item.texto}</span>
-          ${item.autor ? `<span class="literario-autor">— ${item.autor}</span>` : ''}
-          <div class="literario-actions">
-            <button class="literario-fav-btn${item.favorito ? ' fav' : ''}" title="Favorito">&#9733;</button>
-            <button class="literario-edit-btn" title="Editar">&#9998;</button>
-            <button class="literario-del-btn" title="Eliminar">&#128465;</button>
-          </div>
-        `;
-        // Expand/collapse on click
-        li.onclick = function(e) {
-          if (
-            e.target.classList.contains('literario-fav-btn') ||
-            e.target.classList.contains('literario-del-btn') ||
-            e.target.classList.contains('literario-edit-btn')
-          ) return;
-          li.classList.toggle('expanded');
-        };
-        // Favorito
-        li.querySelector('.literario-fav-btn').onclick = async function(e) {
-          e.stopPropagation();
-          try {
-            await litRef.doc(item.id).update({ favorito: !item.favorito });
-          } catch (err) { alert("Error al marcar favorito."); }
-        };
-        // Editar
-        li.querySelector('.literario-edit-btn').onclick = async function(e) {
-          e.stopPropagation();
-          const nuevoTexto = prompt("Modifica el texto:", item.texto);
-          if (nuevoTexto === null) return;
-          const nuevoAutor = prompt("Modifica el autor:", item.autor || "");
-          if (nuevoAutor === null) return;
-          try {
-            await litRef.doc(item.id).update({
-              texto: nuevoTexto.trim(),
-              autor: nuevoAutor.trim()
-            });
-          } catch (err) { alert("Error al editar."); }
-        };
-        // Eliminar
-        li.querySelector('.literario-del-btn').onclick = async function(e) {
-          e.stopPropagation();
-          if (confirm("¿Eliminar este texto?")) {
-            try {
-              await litRef.doc(item.id).delete();
-            } catch (err) { alert("Error al eliminar."); }
-          }
-        };
-        lista.appendChild(li);
-      });
+  // Render literario items
+  function renderLiterario(items) {
+    lista.innerHTML = '';
+    if (items.length === 0) {
+      lista.innerHTML = '<li class="literario-item" style="opacity:0.7;">(Sin textos aún)</li>';
+      return;
     }
-
-    // Escucha en tiempo real los textos literarios
-    litRef.orderBy('fechaTS', 'desc').onSnapshot(snapshot => {
-      const items = [];
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        items.push({
-          id: doc.id,
-          texto: data.texto,
-          autor: data.autor,
-          favorito: !!data.favorito,
-          fechaTS: data.fechaTS
-        });
-      });
-      renderLiterario(items);
-    });
-
-    // Añadir nuevo texto literario
-    form.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const texto = textoInput.value.trim();
-      const autor = autorInput.value.trim();
-      if (!texto) return;
-      const fechaObj = new Date();
-      try {
-        await litRef.add({
-          texto,
-          autor,
-          favorito: false,
-          fechaTS: fechaObj.getTime()
-        });
-        textoInput.value = '';
-        autorInput.value = '';
-      } catch (err) {
-        alert("Error al guardar el texto.");
-      }
+    items.forEach(item => {
+      const li = document.createElement('li');
+      li.className = 'literario-item';
+      li.innerHTML = `
+        <span class="literario-texto">${item.texto}</span>
+        ${item.autor ? `<span class="literario-autor">— ${item.autor}</span>` : ''}
+        <div class="literario-actions">
+          <button class="literario-fav-btn${item.favorito ? ' fav' : ''}" title="Favorito">&#9733;</button>
+          <button class="literario-edit-btn" title="Editar">&#9998;</button>
+          <button class="literario-del-btn" title="Eliminar">&#128465;</button>
+        </div>
+      `;
+      // Expand/collapse on click
+      li.onclick = function(e) {
+        if (
+          e.target.classList.contains('literario-fav-btn') ||
+          e.target.classList.contains('literario-del-btn') ||
+          e.target.classList.contains('literario-edit-btn')
+        ) return;
+        li.classList.toggle('expanded');
+      };
+      // Favorito
+      li.querySelector('.literario-fav-btn').onclick = async function(e) {
+        e.stopPropagation();
+        try {
+          await litRef.doc(item.id).update({ favorito: !item.favorito });
+        } catch (err) { alert("Error al marcar favorito."); }
+      };
+      // Editar
+      li.querySelector('.literario-edit-btn').onclick = async function(e) {
+        e.stopPropagation();
+        const nuevoTexto = prompt("Modifica el texto:", item.texto);
+        if (nuevoTexto === null) return;
+        const nuevoAutor = prompt("Modifica el autor:", item.autor || "");
+        if (nuevoAutor === null) return;
+        try {
+          await litRef.doc(item.id).update({
+            texto: nuevoTexto.trim(),
+            autor: nuevoAutor.trim()
+          });
+        } catch (err) { alert("Error al editar."); }
+      };
+      // Eliminar
+      li.querySelector('.literario-del-btn').onclick = async function(e) {
+        e.stopPropagation();
+        if (confirm("¿Eliminar este texto?")) {
+          try {
+            await litRef.doc(item.id).delete();
+          } catch (err) { alert("Error al eliminar."); }
+        }
+      };
+      lista.appendChild(li);
     });
   }
-})();
+
+  // Escucha en tiempo real los textos literarios
+  litRef.orderBy('fechaTS', 'desc').onSnapshot(snapshot => {
+    const items = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      items.push({
+        id: doc.id,
+        texto: data.texto,
+        autor: data.autor,
+        favorito: !!data.favorito,
+        fechaTS: data.fechaTS
+      });
+    });
+    renderLiterario(items);
+  });
+
+  // Añadir nuevo texto literario
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const texto = textoInput.value.trim();
+    const autor = autorInput.value.trim();
+    if (!texto) return;
+    const fechaObj = new Date();
+    try {
+      await litRef.add({
+        texto,
+        autor,
+        favorito: false,
+        fechaTS: fechaObj.getTime()
+      });
+      textoInput.value = '';
+      autorInput.value = '';
+    } catch (err) {
+      alert("Error al guardar el texto.");
+    }
+  });
+}
 
 // Detecta cambio de modo nocturno y reinicia los aviones con nuevos colores
 document.addEventListener('DOMContentLoaded', function() {

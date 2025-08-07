@@ -1421,88 +1421,258 @@ body.night-mode .literario-panel h2 {
   100% { box-shadow: 0 0 0 0 #f9c04688; }
 }
 
-/* Modal de contraseña */
-#password-modal {
+/* === MODAL DE AUTENTICACIÓN === */
+.auth-modal {
   position: fixed;
   z-index: 9999;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: #fffbe9;
+  background: linear-gradient(135deg, #fffbe9 0%, #f5f1e8 100%);
   display: flex;
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(2px);
 }
-#password-form {
-  background: #fff;
-  padding: 32px 28px;
-  border-radius: 18px;
-  box-shadow: 0 4px 24px #e1b86655;
+
+.auth-container {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.auth-form {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 40px 32px;
+  border-radius: 20px;
+  box-shadow: 
+    0 8px 32px rgba(225, 184, 102, 0.15),
+    0 4px 16px rgba(189, 85, 50, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(225, 184, 102, 0.2);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
+  gap: 24px;
+  animation: modalSlideIn 0.4s ease-out;
 }
-#password-form h2 {
+
+@keyframes modalSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.auth-title {
   color: #bd5532;
   font-family: 'Dancing Script', cursive;
-  margin-bottom: 10px;
+  font-size: 2.2em;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(189, 85, 50, 0.1);
+  letter-spacing: 1px;
 }
-#password-input {
-  font-size: 1.2em;
-  padding: 8px 14px;
-  border-radius: 8px;
+
+.auth-fields {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-input {
+  width: 100%;
+  font-size: 1.1em;
+  padding: 14px 18px;
+  border-radius: 12px;
   border: 2px solid #e1b866;
   outline: none;
-  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+  font-family: 'Roboto', sans-serif;
+  box-sizing: border-box;
 }
-#password-input:focus {
+
+.auth-input:focus {
   border-color: #bd5532;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 0 0 3px rgba(189, 85, 50, 0.1);
+  transform: translateY(-1px);
 }
-#password-form button {
-  background: #e1b866;
-  color: #fffbe9;
+
+.auth-input::placeholder {
+  color: #8a8a8a;
+  font-style: italic;
+}
+
+.auth-btn {
+  width: 100%;
   border: none;
-  border-radius: 8px;
-  padding: 8px 24px;
+  border-radius: 12px;
+  padding: 14px 24px;
   font-size: 1.1em;
+  font-weight: 600;
   cursor: pointer;
-  margin-top: 8px;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
+  font-family: 'Roboto', sans-serif;
+  position: relative;
+  overflow: hidden;
 }
-#password-form button:hover {
-  background: #bd5532;
+
+.auth-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
 }
-#password-error {
-  color: #d32f2f;
-  display: none;
+
+.auth-btn:hover::before {
+  left: 100%;
+}
+
+.auth-btn-primary {
+  background: linear-gradient(135deg, #e1b866 0%, #d4a855 100%);
+  color: #fffbe9;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 12px rgba(225, 184, 102, 0.3);
+}
+
+.auth-btn-primary:hover {
+  background: linear-gradient(135deg, #d4a855 0%, #c69944 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(225, 184, 102, 0.4);
+}
+
+.auth-btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(225, 184, 102, 0.3);
+}
+
+.auth-btn-secondary {
+  background: linear-gradient(135deg, #bd5532 0%, #a64928 100%);
+  color: #fffbe9;
+  box-shadow: 0 4px 12px rgba(189, 85, 50, 0.3);
+}
+
+.auth-btn-secondary:hover {
+  background: linear-gradient(135deg, #a64928 0%, #8f3d1f 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(189, 85, 50, 0.4);
+}
+
+.auth-btn-secondary:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(189, 85, 50, 0.3);
+}
+
+.auth-message {
   font-size: 1em;
-  margin-top: 4px;
+  text-align: center;
+  font-weight: 500;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 0;
+  display: none;
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+@keyframes messageSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-error {
+  color: #d32f2f;
+  background: rgba(211, 47, 47, 0.1);
+  border: 1px solid rgba(211, 47, 47, 0.2);
+}
+
+.auth-loading {
+  color: #bd5532;
+  background: rgba(189, 85, 50, 0.1);
+  border: 1px solid rgba(189, 85, 50, 0.2);
 }
 
 /* Evita scroll del fondo cuando el modal está activo */
-body:has(#password-modal[style*="display: flex"]) {
+body:has(.auth-modal[style*="display: flex"]) {
   overflow: hidden !important;
 }
 
-/* Responsive para el modal en móvil */
-@media screen and (max-width: 430px) {
-  #password-form {
-    padding: 18px 8vw;
-    border-radius: 12px;
-    gap: 12px;
+/* === RESPONSIVE PARA MÓVIL === */
+@media screen and (max-width: 480px) {
+  .auth-container {
+    margin: 0 16px;
   }
-  #password-modal {
-    padding: 0;
+  
+  .auth-form {
+    padding: 32px 24px;
+    border-radius: 16px;
+    gap: 20px;
   }
-  #password-input {
+  
+  .auth-title {
+    font-size: 1.8em;
+  }
+  
+  .auth-input {
     font-size: 1em;
-    padding: 7px 10px;
+    padding: 12px 16px;
   }
-  #password-form button {
+  
+  .auth-btn {
     font-size: 1em;
-    padding: 7px 18px;
+    padding: 12px 20px;
+  }
+}
+
+/* === RESPONSIVE PARA TABLETS === */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  .auth-container {
+    max-width: 400px;
+  }
+  
+  .auth-form {
+    padding: 36px 28px;
+  }
+  
+  .auth-title {
+    font-size: 2em;
+  }
+}
+
+/* === RESPONSIVE PARA PANTALLAS GRANDES === */
+@media screen and (min-width: 1200px) {
+  .auth-container {
+    max-width: 460px;
+  }
+  
+  .auth-form {
+    padding: 48px 40px;
+  }
+  
+  .auth-title {
+    font-size: 2.4em;
   }
 }
 
