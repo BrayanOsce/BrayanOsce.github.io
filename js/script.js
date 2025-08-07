@@ -748,13 +748,7 @@ function initPlanes() {
         'Me encanta compartir contigo',
         'Por eso siempre querré darte más de mi',
         'También otras sorpresas',
-        '¿esperas otra?',
-        'Claro que sí hay... y habrán',
-        'Un día más contigo',
-        'Es lo que necesito para estar bien',
-        'Ah, espera',
-        'Otro regalo llega la otra semana',
-        'C***U B**K'
+        'No ha llegado el siguiente regalo',
     ];
     const banners = bannerContents;
     let spriteId = 0;
@@ -867,11 +861,12 @@ function initPlanes() {
         count = 0;
         bannerIndex = 0;
         createTimers();
-        if (shownCount >= 10) {
-            // Detener el intervalo y no mostrar más aviones
-            if (intervalId) clearInterval(intervalId);
-            return;
+        
+        // Si hemos mostrado todos los mensajes, reiniciar el ciclo
+        if (shownCount >= banners.length) {
+            shownCount = 0;
         }
+        
         let bannerText = banners[shownCount];
         createPlane(bannerText.replaceAll('#', ' '));
         shownCount++;
@@ -888,7 +883,7 @@ function initPlanes() {
         topIndex = 3;
         count = 0;
         bannerIndex = 0;
-        // splitTextForBanners(); // Elimina esta línea, no es necesaria
+        shownCount = 0; // Reiniciar contador al resetear
         createTimers();
         createPlanes();
     };
@@ -921,6 +916,12 @@ function setupDeseos() {
     console.error('No se encontraron los elementos de la lista de deseos. Verifica los IDs en el HTML.');
     return;
   }
+
+  // Evitar múltiples inicializaciones
+  if (deseosForm.hasAttribute('data-initialized')) {
+    return;
+  }
+  deseosForm.setAttribute('data-initialized', 'true');
 
   // Verifica que solo haya un elemento con cada ID
   ['deseos-form', 'deseo-input', 'deseos-lista'].forEach(id => {
@@ -1032,6 +1033,12 @@ function setupLiterario() {
   const autorInput = document.getElementById('literario-autor');
   const lista = document.getElementById('literario-lista');
   if (!form || !textoInput || !autorInput || !lista) return;
+
+  // Evitar múltiples inicializaciones
+  if (form.hasAttribute('data-initialized')) {
+    return;
+  }
+  form.setAttribute('data-initialized', 'true');
 
   // Firestore
   if (!window.firebase || !window.firebase.firestore) return;
