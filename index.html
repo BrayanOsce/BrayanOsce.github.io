@@ -49,9 +49,14 @@
             <img src="css/book2.png" alt="Mushroom" style="height:1.2em;vertical-align:middle;">
             Nuestro rincón literario <img src="css/pen.png" alt="Mushroom" style="height:1.4em;vertical-align:middle;"> </h2>
           <form id="literario-form" autocomplete="off" class="literario-form" onsubmit="return false;">
-            <input type="text" id="literario-texto" placeholder="Agrega tu texto..." maxlength="320" />
-            <input type="text" id="literario-autor" placeholder="Autor/a..." maxlength="24" />
-            <button type="submit" class="literario-btn">Añadir</button>
+            <div style="display: flex; gap: 8px; align-items: flex-start; position: relative;">
+              <div style="position: relative; flex: 1;">
+                <textarea id="literario-texto" placeholder="Agrega tu texto..." maxlength="5000" rows="3"></textarea>
+                <div id="char-counter" style="position: absolute; bottom: 5px; right: 8px; font-size: 0.7em; color: #bd5532; opacity: 0.7;">0/5000</div>
+              </div>
+              <input type="text" id="literario-autor" placeholder="Autor/a..." maxlength="50" />
+              <button type="submit" class="literario-btn">Añadir</button>
+            </div>
           </form>
           <ul id="literario-lista" class="literario-lista"></ul>
         </div>

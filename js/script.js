@@ -1032,13 +1032,90 @@ function setupLiterario() {
   const textoInput = document.getElementById('literario-texto');
   const autorInput = document.getElementById('literario-autor');
   const lista = document.getElementById('literario-lista');
+  const charCounter = document.getElementById('char-counter');
   if (!form || !textoInput || !autorInput || !lista) return;
 
   // Evitar múltiples inicializaciones
   if (form.hasAttribute('data-initialized')) {
     return;
   }
+
+  // Contador de caracteres
+  if (charCounter) {
+    function updateCharCounter() {
+      const currentLength = textoInput.value.length;
+      const maxLength = 5000;
+      charCounter.textContent = `${currentLength}/${maxLength}`;
+      
+      // Cambiar color según proximidad al límite
+      if (currentLength > maxLength * 0.9) {
+        charCounter.style.color = '#d32f2f';
+        charCounter.style.fontWeight = 'bold';
+      } else if (currentLength > maxLength * 0.75) {
+        charCounter.style.color = '#f57c00';
+        charCounter.style.fontWeight = 'normal';
+      } else {
+        charCounter.style.color = '#bd5532';
+        charCounter.style.fontWeight = 'normal';
+      }
+    }
+
+    textoInput.addEventListener('input', updateCharCounter);
+    textoInput.addEventListener('keyup', updateCharCounter);
+    textoInput.addEventListener('paste', () => {
+      setTimeout(updateCharCounter, 10);
+    });
+    
+    // Inicializar el contador
+    updateCharCounter();
+  }
   form.setAttribute('data-initialized', 'true');
+  
+  // === FUNCIONALIDAD FULLSCREEN MÓVIL ===
+  const panel = document.getElementById('literario-panel');
+  
+  function isMobile() {
+    return window.innerWidth <= 480;
+  }
+  
+  function toggleFullscreen() {
+    if (!isMobile()) return;
+    
+    panel.classList.toggle('fullscreen');
+    
+    // Prevenir scroll del body cuando está en fullscreen
+    if (panel.classList.contains('fullscreen')) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }
+  
+  // Activar fullscreen al hacer clic en el panel en móvil
+  if (panel) {
+    panel.addEventListener('click', function(e) {
+      if (isMobile() && !panel.classList.contains('fullscreen')) {
+        // Solo activar si no se está haciendo clic en un botón o input
+        if (!e.target.closest('button, input, textarea, .literario-actions')) {
+          toggleFullscreen();
+        }
+      }
+    });
+    
+    // Cerrar fullscreen con botón back o escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && panel.classList.contains('fullscreen')) {
+        toggleFullscreen();
+      }
+    });
+    
+    // Cerrar fullscreen al hacer clic fuera del contenido en móvil
+    panel.addEventListener('click', function(e) {
+      if (isMobile() && panel.classList.contains('fullscreen') && e.target === panel) {
+        toggleFullscreen();
+      }
+    });
+  }
 
   // Firestore
   if (!window.firebase || !window.firebase.firestore) return;
@@ -1055,6 +1132,10 @@ function setupLiterario() {
     items.forEach(item => {
       const li = document.createElement('li');
       li.className = 'literario-item';
+      
+      // Verificar si el texto es largo (más de 150 caracteres o más de 2 líneas)
+      const isLongText = item.texto.length > 150 || item.texto.split('\n').length > 2;
+      
       li.innerHTML = `
         <span class="literario-texto">${item.texto}</span>
         ${item.autor ? `<span class="literario-autor">— ${item.autor}</span>` : ''}
@@ -1062,17 +1143,49 @@ function setupLiterario() {
           <button class="literario-fav-btn${item.favorito ? ' fav' : ''}" title="Favorito">&#9733;</button>
           <button class="literario-edit-btn" title="Editar">&#9998;</button>
           <button class="literario-del-btn" title="Eliminar">&#128465;</button>
+          <button class="literario-expand-btn" title="Expandir/Contraer"><img src="css/expand.png" alt="Expandir" style="height:1em;vertical-align:middle;"></button>
         </div>
       `;
-      // Expand/collapse on click
-      li.onclick = function(e) {
-        if (
-          e.target.classList.contains('literario-fav-btn') ||
-          e.target.classList.contains('literario-del-btn') ||
-          e.target.classList.contains('literario-edit-btn')
-        ) return;
+      
+      // Agregar clase para todos los textos (no solo largos)
+      li.classList.add('has-expandable-text');
+      if (isLongText) {
+        li.classList.add('has-long-text');
+      }
+      
+      // Función para alternar expansión
+      function toggleExpansion() {
         li.classList.toggle('expanded');
-      };
+        
+        // Actualizar el botón de expansión si existe
+        const expandBtn = li.querySelector('.literario-expand-btn');
+        if (expandBtn) {
+          const isExpanded = li.classList.contains('expanded');
+          expandBtn.innerHTML = isExpanded 
+            ? '<img src="css/minimize.png" alt="Contraer" style="height:1em;vertical-align:middle;">'
+            : '<img src="css/expand.png" alt="Expandir" style="height:1em;vertical-align:middle;">';
+          expandBtn.title = isExpanded ? 'Contraer' : 'Expandir';
+        }
+        
+        // Scroll suave al elemento expandido
+        if (li.classList.contains('expanded')) {
+          setTimeout(() => {
+            li.scrollIntoView({
+              behavior: 'smooth',
+              block: 'nearest'
+            });
+          }, 100);
+        }
+      }
+      
+      // Solo el botón específico de expansión (funciona para todos los textos)
+      const expandBtn = li.querySelector('.literario-expand-btn');
+      if (expandBtn) {
+        expandBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          toggleExpansion();
+        });
+      }
       // Favorito
       li.querySelector('.literario-fav-btn').onclick = async function(e) {
         e.stopPropagation();
@@ -1083,16 +1196,84 @@ function setupLiterario() {
       // Editar
       li.querySelector('.literario-edit-btn').onclick = async function(e) {
         e.stopPropagation();
-        const nuevoTexto = prompt("Modifica el texto:", item.texto);
-        if (nuevoTexto === null) return;
-        const nuevoAutor = prompt("Modifica el autor:", item.autor || "");
-        if (nuevoAutor === null) return;
-        try {
-          await litRef.doc(item.id).update({
-            texto: nuevoTexto.trim(),
-            autor: nuevoAutor.trim()
-          });
-        } catch (err) { alert("Error al editar."); }
+        
+        // Verificar si ya está en modo edición
+        if (li.classList.contains('editing')) return;
+        
+        li.classList.add('editing');
+        
+        // Obtener elementos actuales
+        const textoSpan = li.querySelector('.literario-texto');
+        const autorSpan = li.querySelector('.literario-autor');
+        const actions = li.querySelector('.literario-actions');
+        
+        // Crear elementos de edición
+        const editContainer = document.createElement('div');
+        editContainer.className = 'edit-container';
+        editContainer.innerHTML = `
+          <textarea class="edit-texto" placeholder="Escribe el texto...">${item.texto}</textarea>
+          <div class="edit-buttons">
+            <button class="save-btn" title="Guardar">💾</button>
+            <button class="cancel-btn" title="Cancelar">❌</button>
+          </div>
+        `;
+        
+        // Ocultar contenido original y mostrar editor
+        textoSpan.style.display = 'none';
+        if (autorSpan) autorSpan.style.display = 'none';
+        actions.style.display = 'none';
+        
+        // Insertar editor después del texto
+        textoSpan.parentNode.insertBefore(editContainer, actions);
+        
+        // Enfocar en el textarea
+        const textarea = editContainer.querySelector('.edit-texto');
+        textarea.focus();
+        textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+        
+        // Función para guardar
+        const saveEdit = async () => {
+          const nuevoTexto = textarea.value.trim();
+          
+          if (!nuevoTexto) {
+            alert('El texto no puede estar vacío');
+            return;
+          }
+          
+          try {
+            await litRef.doc(item.id).update({
+              texto: nuevoTexto
+            });
+            // La actualización se manejará automáticamente por el listener de Firestore
+          } catch (err) {
+            alert("Error al guardar los cambios.");
+            console.error('Error al editar:', err);
+          }
+        };
+        
+        // Función para cancelar
+        const cancelEdit = () => {
+          li.classList.remove('editing');
+          editContainer.remove();
+          textoSpan.style.display = '';
+          if (autorSpan) autorSpan.style.display = '';
+          actions.style.display = '';
+        };
+        
+        // Event listeners
+        editContainer.querySelector('.save-btn').onclick = saveEdit;
+        editContainer.querySelector('.cancel-btn').onclick = cancelEdit;
+        
+        // Guardar con Ctrl+Enter
+        textarea.addEventListener('keydown', (e) => {
+          if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            saveEdit();
+          } else if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelEdit();
+          }
+        });
       };
       // Eliminar
       li.querySelector('.literario-del-btn').onclick = async function(e) {
