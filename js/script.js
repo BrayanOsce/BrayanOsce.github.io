@@ -937,6 +937,33 @@ function setupDeseos() {
   }
   const deseosRef = db.collection('deseos');
 
+  // Función para migrar elementos existentes sin campo orden
+  async function migrateExistingDeseos() {
+    try {
+      const snapshot = await deseosRef.get();
+      const batch = db.batch();
+      let needsUpdate = false;
+      
+      snapshot.forEach((doc, index) => {
+        const data = doc.data();
+        if (data.orden === undefined) {
+          batch.update(doc.ref, { orden: index });
+          needsUpdate = true;
+        }
+      });
+      
+      if (needsUpdate) {
+        await batch.commit();
+        console.log('Elementos existentes migrados con campo orden');
+      }
+    } catch (error) {
+      console.log('Error en migración (no crítico):', error);
+    }
+  }
+
+  // Ejecutar migración una sola vez
+  migrateExistingDeseos();
+
     function renderDeseosFirebase(deseos) {
       deseosLista.innerHTML = '';
       if (deseos.length === 0) {
@@ -951,19 +978,32 @@ function setupDeseos() {
         'css/mushroom5.png',
         'css/mushroom6.png',
       ];
-      deseos.forEach((deseo) => {
+      deseos.forEach((deseo, index) => {
         const li = document.createElement('li');
         li.className = 'deseo-item' + (deseo.hecho ? ' hecho' : '');
+        li.setAttribute('draggable', 'true');
+        li.setAttribute('data-id', deseo.id);
+        li.setAttribute('data-orden', deseo.orden || index);
         const iconUrl = mushroomIcons[Math.floor(Math.random() * mushroomIcons.length)];
         li.innerHTML = `
           <label class="deseo-check-label" style="--mushroom-icon: url('${iconUrl}')">
             <input type="checkbox" class="deseo-check" ${deseo.hecho ? 'checked' : ''} data-id="${deseo.id}">
+            <div class="drag-handle" title="Arrastrar para reordenar">⋮⋮</div>
             <span class="deseo-text">${deseo.texto}</span>
           </label>
           <button class="deseo-eliminar" title="Eliminar" data-id="${deseo.id}">
             <img src="css/shovel.gif" alt="Eliminar" style="height:1em;vertical-align:middle;margin-top:-3px;">
           </button>
         `;
+        
+        // Event listeners para drag and drop
+        li.addEventListener('dragstart', handleDragStart);
+        li.addEventListener('dragover', handleDragOver);
+        li.addEventListener('drop', handleDrop);
+        li.addEventListener('dragend', handleDragEnd);
+        li.addEventListener('dragenter', handleDragEnter);
+        li.addEventListener('dragleave', handleDragLeave);
+        
         deseosLista.appendChild(li);
       });
     }
@@ -971,24 +1011,157 @@ function setupDeseos() {
     // Escucha en tiempo real los cambios en la colección de deseos
     deseosRef.orderBy('fecha', 'asc').onSnapshot(snapshot => {
       const deseos = [];
-      snapshot.forEach(doc => {
-        deseos.push({ id: doc.id, ...doc.data() });
+      snapshot.forEach((doc, index) => {
+        const data = doc.data();
+        // Si no tiene orden, asignar uno basado en el índice actual
+        const orden = data.orden !== undefined ? data.orden : index;
+        deseos.push({ id: doc.id, ...data, orden });
       });
+      
+      // Ordenar por orden, luego por fecha
+      deseos.sort((a, b) => {
+        if (a.orden !== b.orden) {
+          return a.orden - b.orden;
+        }
+        return new Date(a.fecha?.toDate?.() || a.fecha) - new Date(b.fecha?.toDate?.() || b.fecha);
+      });
+      
       renderDeseosFirebase(deseos);
     }, err => {
       console.error('Error al leer deseos de Firestore:', err);
     });
+
+    // Variables para drag and drop
+    let draggedElement = null;
+    let draggedOverElement = null;
+
+    function handleDragStart(e) {
+      draggedElement = this;
+      this.style.opacity = '0.5';
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/html', this.outerHTML);
+    }
+
+    function handleDragOver(e) {
+      if (e.preventDefault) {
+        e.preventDefault();
+      }
+      e.dataTransfer.dropEffect = 'move';
+      return false;
+    }
+
+    function handleDragEnter(e) {
+      if (this !== draggedElement) {
+        this.classList.add('drag-over');
+        draggedOverElement = this;
+      }
+    }
+
+    function handleDragLeave(e) {
+      this.classList.remove('drag-over');
+      if (this === draggedOverElement) {
+        draggedOverElement = null;
+      }
+    }
+
+    function handleDrop(e) {
+      if (e.stopPropagation) {
+        e.stopPropagation();
+      }
+
+      if (draggedElement !== this && draggedElement && this) {
+        // Obtener todos los elementos de la lista
+        const allItems = Array.from(deseosLista.querySelectorAll('.deseo-item:not(.deseo-vacio)'));
+        const draggedIndex = allItems.indexOf(draggedElement);
+        const droppedIndex = allItems.indexOf(this);
+
+        if (draggedIndex !== -1 && droppedIndex !== -1) {
+          // Reordenar elementos en el DOM
+          if (draggedIndex < droppedIndex) {
+            this.parentNode.insertBefore(draggedElement, this.nextSibling);
+          } else {
+            this.parentNode.insertBefore(draggedElement, this);
+          }
+
+          // Actualizar el orden en Firebase
+          updateOrderInFirebase(allItems, draggedIndex, droppedIndex);
+        }
+      }
+
+      return false;
+    }
+
+    function handleDragEnd(e) {
+      this.style.opacity = '';
+      this.classList.remove('dragging');
+      
+      // Limpiar todas las clases de drag-over
+      const allItems = deseosLista.querySelectorAll('.deseo-item');
+      allItems.forEach(item => {
+        item.classList.remove('drag-over');
+      });
+      
+      draggedElement = null;
+      draggedOverElement = null;
+    }
+
+    async function updateOrderInFirebase(allItems, fromIndex, toIndex) {
+      const batch = db.batch();
+      
+      try {
+        // Crear un nuevo array con el orden actualizado
+        const newOrder = Array.from(allItems);
+        const [movedItem] = newOrder.splice(fromIndex, 1);
+        newOrder.splice(toIndex, 0, movedItem);
+
+        // Actualizar el orden en Firebase
+        newOrder.forEach((item, index) => {
+          const id = item.getAttribute('data-id');
+          if (id) {
+            const docRef = deseosRef.doc(id);
+            batch.update(docRef, { orden: index });
+          }
+        });
+
+        await batch.commit();
+        console.log('Orden actualizado en Firebase');
+      } catch (error) {
+        console.error('Error al actualizar el orden:', error);
+        // Recargar la lista en caso de error
+        location.reload();
+      }
+    }
 
     // Añadir nuevo deseo
     deseosForm.addEventListener('submit', async function(e) {
       e.preventDefault();
       const texto = deseosInput.value.trim();
       if (!texto) return;
+      
       try {
+        // Obtener el siguiente número de orden
+        const snapshot = await deseosRef.get();
+        let nextOrder = 0;
+        
+        if (!snapshot.empty) {
+          // Encontrar el orden más alto existente
+          let maxOrder = -1;
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const orden = data.orden !== undefined ? data.orden : 0;
+            if (orden > maxOrder) {
+              maxOrder = orden;
+            }
+          });
+          nextOrder = maxOrder + 1;
+        }
+
         await deseosRef.add({
           texto,
           hecho: false,
-          fecha: new Date()
+          fecha: new Date(),
+          orden: nextOrder
         });
         deseosInput.value = '';
       } catch (err) {
@@ -1025,6 +1198,152 @@ function setupDeseos() {
       }
     });
   }
+
+// === MODAL DE CONFIRMACIÓN PERSONALIZADO ===
+function showCustomConfirm(message, onConfirm, onCancel = null) {
+  // Crear el modal
+  const modal = document.createElement('div');
+  modal.className = 'custom-confirm-modal';
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999999;
+    backdrop-filter: blur(3px);
+  `;
+  
+  // Crear el contenido del modal
+  const modalContent = document.createElement('div');
+  modalContent.style.cssText = `
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    max-width: 320px;
+    width: 85%;
+    text-align: center;
+    font-family: 'Roboto', sans-serif;
+    animation: modalSlideIn 0.3s ease;
+  `;
+  
+  // Añadir animación CSS
+  if (!document.querySelector('#modal-animations')) {
+    const style = document.createElement('style');
+    style.id = 'modal-animations';
+    style.textContent = `
+      @keyframes modalSlideIn {
+        from { transform: scale(0.8); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  
+  modalContent.innerHTML = `
+    <div style="margin-bottom: 25px;">
+      <div style="margin-bottom: 15px;">
+        <img src="css/delete_text.png" alt="Eliminar" style="width: 40px; height: 40px; object-fit: contain;">
+      </div>
+      <h3 style="margin: 0 0 10px 0; color: #333; font-size: 1.3em;">${message}</h3>
+      <p style="margin: 0; color: #666; font-size: 0.95em;">Esta acción no se puede deshacer</p>
+    </div>
+    <div style="display: flex; gap: 15px; justify-content: center;">
+      <button id="confirm-yes" style="
+        background: #e74c3c;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      ">Sí, eliminar</button>
+      <button id="confirm-no" style="
+        background: #95a5a6;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      ">Cancelar</button>
+    </div>
+  `;
+  
+  modal.appendChild(modalContent);
+  document.body.appendChild(modal);
+  
+  // Añadir efectos hover
+  const yesBtn = modalContent.querySelector('#confirm-yes');
+  const noBtn = modalContent.querySelector('#confirm-no');
+  
+  yesBtn.addEventListener('mouseover', () => {
+    yesBtn.style.background = '#c0392b';
+    yesBtn.style.transform = 'translateY(-1px)';
+  });
+  yesBtn.addEventListener('mouseout', () => {
+    yesBtn.style.background = '#e74c3c';
+    yesBtn.style.transform = 'translateY(0)';
+  });
+  
+  noBtn.addEventListener('mouseover', () => {
+    noBtn.style.background = '#7f8c8d';
+    noBtn.style.transform = 'translateY(-1px)';
+  });
+  noBtn.addEventListener('mouseout', () => {
+    noBtn.style.background = '#95a5a6';
+    noBtn.style.transform = 'translateY(0)';
+  });
+  
+  // Enfocar en el botón "No" por defecto (más seguro)
+  noBtn.focus();
+  
+  // Funciones para cerrar el modal
+  function closeModal() {
+    modal.style.animation = 'modalSlideOut 0.2s ease';
+    setTimeout(() => {
+      if (modal.parentNode) {
+        document.body.removeChild(modal);
+      }
+    }, 200);
+  }
+  
+  // Event listeners
+  yesBtn.addEventListener('click', () => {
+    closeModal();
+    if (onConfirm) onConfirm();
+  });
+  
+  noBtn.addEventListener('click', () => {
+    closeModal();
+    if (onCancel) onCancel();
+  });
+  
+  // Cerrar con Escape
+  modal.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeModal();
+      if (onCancel) onCancel();
+    }
+  });
+  
+  // Cerrar al hacer clic fuera del modal
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal();
+      if (onCancel) onCancel();
+    }
+  });
+}
 
 // === PANEL LITERARIO SINCRONIZADO FIRESTORE ===
 function setupLiterario() {
@@ -1138,7 +1457,7 @@ function setupLiterario() {
       
       li.innerHTML = `
         <span class="literario-texto">${item.texto}</span>
-        ${item.autor ? `<span class="literario-autor">— ${item.autor}</span>` : ''}
+        ${item.autor ? `<span class="literario-autor">- ${item.autor}</span>` : ''}
         <div class="literario-actions">
           <button class="literario-fav-btn${item.favorito ? ' fav' : ''}" title="Favorito">&#9733;</button>
           <button class="literario-edit-btn" title="Editar">&#9998;</button>
@@ -1278,11 +1597,16 @@ function setupLiterario() {
       // Eliminar
       li.querySelector('.literario-del-btn').onclick = async function(e) {
         e.stopPropagation();
-        if (confirm("¿Eliminar este texto?")) {
-          try {
-            await litRef.doc(item.id).delete();
-          } catch (err) { alert("Error al eliminar."); }
-        }
+        showCustomConfirm(
+          "¿Eliminar este texto?",
+          async () => {
+            try {
+              await litRef.doc(item.id).delete();
+            } catch (err) { 
+              alert("Error al eliminar."); 
+            }
+          }
+        );
       };
       lista.appendChild(li);
     });

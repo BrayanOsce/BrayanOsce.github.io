@@ -836,12 +836,55 @@ button.prev:hover, button.next:hover, button.play-pause:hover {
   padding: 10px 0 10px 0;
   border-bottom: 1px solid #e1b86644;
   font-size: 1.13em;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
   background: linear-gradient(90deg, #fffbe9 80%, #ffe6e6 100%);
   border-radius: 8px;
   margin-bottom: 4px;
   box-shadow: 0 1px 4px #e1b86622;
   position: relative;
+  cursor: grab;
+}
+
+.deseo-item:active {
+  cursor: grabbing;
+}
+
+.deseo-item.dragging {
+  opacity: 0.5;
+  transform: rotate(3deg);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+.deseo-item.drag-over {
+  background: linear-gradient(90deg, #fff2cc 80%, #ffebe6 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(225, 184, 102, 0.4);
+  border: 2px dashed #e1b866;
+}
+
+.drag-handle {
+  color: #bd5532;
+  font-size: 1.1em;
+  cursor: grab;
+  opacity: 0.6;
+  transition: opacity 0.2s, color 0.2s;
+  user-select: none;
+  padding: 2px 4px;
+  border-radius: 3px;
+  margin: 0 6px 0 0;
+  display: inline-block;
+  line-height: 1;
+}
+
+.drag-handle:hover {
+  opacity: 1;
+  color: #a04428;
+  background: rgba(225, 184, 102, 0.1);
+}
+
+.deseo-item:active .drag-handle {
+  cursor: grabbing;
 }
 .deseo-item.hecho {
   background: linear-gradient(90deg, #ffe6e6 80%, #fffbe9 100%);
@@ -1088,15 +1131,45 @@ body.night-mode .deseo-eliminar:hover {
 body.night-mode .deseo-item,
 body.night-mode .deseo-check-label,
 body.night-mode .deseo-text {
-  color: #e1b866 !important;
-  text-shadow:
-    0 0 0.5px #000,
-    0 0 2px #232b45,
-    0 1px 8px #000,
-    0 0px 2px #3a4a7a;
-  /* Marco negro más delgado alrededor del texto */
-  -webkit-text-stroke: 0.1px #000;
-  text-stroke: 0.5px #000;
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  -webkit-text-stroke: none;
+  text-stroke: none;
+}
+
+/* Mejorar contraste para items completados */
+body.night-mode .deseo-item.hecho .deseo-text {
+  color: #b0b0b0 !important;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* Mejorar legibilidad del texto cuando no hay deseos */
+body.night-mode .deseo-vacio {
+  color: #cccccc !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  font-style: italic;
+}
+
+/* Estilos drag and drop para modo nocturno */
+body.night-mode .deseo-item.drag-over {
+  background: linear-gradient(90deg, #3a4a7a 80%, #2a3557 100%);
+  border: 2px dashed #fffbe9;
+  box-shadow: 0 4px 12px rgba(255, 251, 233, 0.3);
+}
+
+body.night-mode .drag-handle {
+  color: #fffbe9;
+  opacity: 0.7;
+}
+
+body.night-mode .drag-handle:hover {
+  color: #ffe6c1;
+  background: rgba(255, 251, 233, 0.1);
+}
+
+body.night-mode .deseo-item.dragging {
+  box-shadow: 0 8px 16px rgba(255, 251, 233, 0.2);
 }
 
 /* Mariposas flotando mágicamente */
@@ -1345,7 +1418,7 @@ body.night-mode .deseo-text {
   font-family: 'Roboto', sans-serif;
   font-size: 0.95em;
   color: #8a4a2e;
-  text-align: right;
+  text-align: left;
   font-weight: 600;
   opacity: 0.9;
   margin-bottom: 6px;
@@ -1405,7 +1478,7 @@ body.night-mode .deseo-text {
 
 body.night-mode .literario-panel h2 {
   color: #fffbe9 !important;
-  font-size: 2.1em; /* Cambia este valor para el modo noche */
+  font-size: 1.8em; /* Mismo tamaño que en modo diurno */
   text-shadow: 0 2px 8px #2a3557;
 }
 
