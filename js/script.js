@@ -996,13 +996,21 @@ function setupDeseos() {
           </button>
         `;
         
-        // Event listeners para drag and drop
+        // Event listeners para drag and drop (escritorio y móvil)
         li.addEventListener('dragstart', handleDragStart);
         li.addEventListener('dragover', handleDragOver);
         li.addEventListener('drop', handleDrop);
         li.addEventListener('dragend', handleDragEnd);
         li.addEventListener('dragenter', handleDragEnter);
         li.addEventListener('dragleave', handleDragLeave);
+        
+        // Event listeners para touch (móvil)
+        const dragHandle = li.querySelector('.drag-handle');
+        if (dragHandle) {
+          dragHandle.addEventListener('touchstart', handleTouchStart, { passive: false });
+          dragHandle.addEventListener('touchmove', handleTouchMove, { passive: false });
+          dragHandle.addEventListener('touchend', handleTouchEnd, { passive: false });
+        }
         
         deseosLista.appendChild(li);
       });
@@ -1131,6 +1139,120 @@ function setupDeseos() {
         // Recargar la lista en caso de error
         location.reload();
       }
+    }
+
+    // Variables para touch events (móvil)
+    let touchStartY = 0;
+    let touchCurrentY = 0;
+    let touchDraggedElement = null;
+    let touchPlaceholder = null;
+    let touchOffset = 0;
+
+    function handleTouchStart(e) {
+      const touch = e.touches[0];
+      touchStartY = touch.clientY;
+      touchCurrentY = touch.clientY;
+      
+      // Encontrar el elemento li más cercano
+      touchDraggedElement = e.target.closest('.deseo-item');
+      if (!touchDraggedElement) return;
+      
+      // Calcular offset desde el inicio del elemento
+      const rect = touchDraggedElement.getBoundingClientRect();
+      touchOffset = touch.clientY - rect.top;
+      
+      // Agregar clase visual
+      touchDraggedElement.classList.add('touch-dragging');
+      
+      // Crear placeholder
+      touchPlaceholder = touchDraggedElement.cloneNode(true);
+      touchPlaceholder.classList.add('touch-placeholder');
+      touchPlaceholder.classList.remove('touch-dragging');
+      
+      e.preventDefault();
+    }
+
+    function handleTouchMove(e) {
+      if (!touchDraggedElement) return;
+      
+      const touch = e.touches[0];
+      touchCurrentY = touch.clientY;
+      
+      // Mover el elemento arrastrado
+      const deltaY = touchCurrentY - touchStartY;
+      touchDraggedElement.style.transform = `translateY(${deltaY}px)`;
+      touchDraggedElement.style.zIndex = '1000';
+      
+      // Encontrar el elemento sobre el que estamos
+      const elementBelow = findElementBelow(touch.clientX, touch.clientY);
+      
+      if (elementBelow && elementBelow !== touchDraggedElement && elementBelow.classList.contains('deseo-item')) {
+        // Insertar placeholder en la nueva posición
+        if (touchPlaceholder.parentNode) {
+          touchPlaceholder.parentNode.removeChild(touchPlaceholder);
+        }
+        
+        const rect = elementBelow.getBoundingClientRect();
+        const middle = rect.top + rect.height / 2;
+        
+        if (touch.clientY < middle) {
+          elementBelow.parentNode.insertBefore(touchPlaceholder, elementBelow);
+        } else {
+          elementBelow.parentNode.insertBefore(touchPlaceholder, elementBelow.nextSibling);
+        }
+      }
+      
+      e.preventDefault();
+    }
+
+    function handleTouchEnd(e) {
+      if (!touchDraggedElement) return;
+      
+      // Restaurar estilos
+      touchDraggedElement.style.transform = '';
+      touchDraggedElement.style.zIndex = '';
+      touchDraggedElement.classList.remove('touch-dragging');
+      
+      // Si hay placeholder, realizar el reordenamiento
+      if (touchPlaceholder && touchPlaceholder.parentNode) {
+        const allItems = Array.from(deseosLista.querySelectorAll('.deseo-item:not(.deseo-vacio)'));
+        const originalIndex = allItems.indexOf(touchDraggedElement);
+        
+        // Insertar elemento en la posición del placeholder
+        touchPlaceholder.parentNode.insertBefore(touchDraggedElement, touchPlaceholder);
+        touchPlaceholder.parentNode.removeChild(touchPlaceholder);
+        
+        // Recalcular índices después del movimiento
+        const newAllItems = Array.from(deseosLista.querySelectorAll('.deseo-item:not(.deseo-vacio)'));
+        const newIndex = newAllItems.indexOf(touchDraggedElement);
+        
+        if (originalIndex !== newIndex) {
+          updateOrderInFirebase(newAllItems, originalIndex, newIndex);
+        }
+      }
+      
+      // Limpiar variables
+      touchDraggedElement = null;
+      touchPlaceholder = null;
+      touchStartY = 0;
+      touchCurrentY = 0;
+      touchOffset = 0;
+      
+      e.preventDefault();
+    }
+
+    function findElementBelow(x, y) {
+      // Temporalmente ocultar el elemento arrastrado para encontrar el que está debajo
+      const originalDisplay = touchDraggedElement.style.display;
+      touchDraggedElement.style.display = 'none';
+      
+      const elementBelow = document.elementFromPoint(x, y);
+      const deseoItem = elementBelow ? elementBelow.closest('.deseo-item') : null;
+      
+      // Restaurar visibilidad
+      touchDraggedElement.style.display = originalDisplay;
+      
+      return deseoItem;
     }
 
     // Añadir nuevo deseo
