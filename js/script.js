@@ -403,7 +403,7 @@ const anifotos = [
     "1000100071.jpg",
     "1000122489.jpg",
     "1000130574.jpg",
-    "Bono regalo - Digital",
+    "Bono-regalo-Digital.jpg",
     "foto1.jpg",
     "foto2.jpg",
     "IMG-20230902-WA0018.jpg",
